@@ -1,5 +1,51 @@
 import React, { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import './styles.css';
+
+
+// these will be baked at build time by React (set them in Netlify env as REACT_APP_...)
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+export default function App() {
+const [count, setCount] = useState(0);
+const [spinning, setSpinning] = useState(false);
+
+
+useEffect(() => {
+// fetch initial value
+let mounted = true;
+(async () => {
+const { data, error } = await supabase.from('clicks').select('total').eq('id', 1).single();
+if (error) {
+console.error('fetch initial:', error);
+return;
+}
+if (mounted) setCount(Number(data.total ?? 0));
+})();
+
+
+// subscribe to updates on the clicks table
+const channel = supabase
+.channel('public:clicks')
+.on('postgres_changes', { event: '*', schema: 'public', table: 'clicks', filter: 'id=eq.1' }, (payload) => {
+// payload.eventType can be INSERT/UPDATE
+const newTotal = payload.new?.total ?? payload.record?.total;
+if (newTotal !== undefined) setCount(Number(newTotal));
+})
+.subscribe();
+
+
+return () => {
+mounted = false;
 supabase.removeChannel(channel);
+};
+}, []);
+
 
 const handleClick = async () => {
 setSpinning(true);
