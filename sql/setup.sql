@@ -1,4 +1,3 @@
-sql
 -- create the table
 create table if not exists clicks (
 id serial primary key,
