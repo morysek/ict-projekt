@@ -1,4 +1,4 @@
--- coolviktor59
+--instagram coolviktor59
 
 -- create the table
 create table if not exists clicks (
