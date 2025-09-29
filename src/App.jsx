@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
 supabase.removeChannel(channel);
-};
-}, []);
-
 
 const handleClick = async () => {
 setSpinning(true);
