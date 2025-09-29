@@ -1,0 +1,15 @@
+/* src/styles.css - minimal reset + button style */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: linear-gradient(135deg,#0f172a,#1e293b); color: #fff; }
+button {
+  background: linear-gradient(180deg,#60a5fa,#3b82f6);
+  border: none;
+  color: white;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(8,10,30,0.6);
+}
+button:disabled { opacity: 0.7; cursor: not-allowed; }
