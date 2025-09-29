@@ -1,2 +1,2 @@
 # ictmrdka
-mrdka na ict
+je to uplna picovina klidne ukradnete ten kod
