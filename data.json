@@ -1,0 +1,25 @@
+{
+  "options": [
+    {
+      "id": "o1",
+      "name": "Aurora Orb",
+      "image": "https://picsum.photos/id/1015/800/600",
+      "count": 0,
+      "description": "A shimmering sphere of northern lights."
+    },
+    {
+      "id": "o2",
+      "name": "Glass Reef",
+      "image": "https://picsum.photos/id/1016/800/600",
+      "count": 0,
+      "description": "A coral-like structure made of translucent glass."
+    },
+    {
+      "id": "o3",
+      "name": "Liquid Mirror",
+      "image": "https://picsum.photos/id/1025/800/600",
+      "count": 0,
+      "description": "A reflective pool that flows like mercury."
+    }
+  ]
+}
