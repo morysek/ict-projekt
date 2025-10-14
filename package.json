@@ -1,16 +1,12 @@
 {
-"name": "netlify-click-counter",
-"version": "1.0.0",
-"private": true,
-"scripts": {
-"start": "react-scripts start",
-"build": "react-scripts build",
-"netlify": "netlify-lambda build netlify/functions"
-},
-"dependencies": {
-"@supabase/supabase-js": "^2.0.0",
-"react": "^18.0.0",
-"react-dom": "^18.0.0",
-"react-scripts": "5.0.1"
-}
+  "name": "clicker-local",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {}
 }
