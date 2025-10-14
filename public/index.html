@@ -1,13 +1,27 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Click Counter</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!-- the build will inject the JS bundle here -->
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Liquid Glass Selector — Local</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main id="app" class="app">
+    <header class="topbar">
+      <h1 class="title">Choose your object</h1>
+      <p class="subtitle">Click an item, then press the button to add an entry. Live updates across tabs.</p>
+    </header>
+
+    <section id="options" class="options" aria-live="polite" aria-atomic="true"></section>
+
+    <div id="floating" class="floating" aria-hidden="true">
+      <button id="actionBtn" class="glass-btn">Confirm selection</button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
 </html>
