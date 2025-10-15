@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Výběr seminářů</title>
   <style>
     body { font-family: system-ui, Arial, sans-serif; margin: 24px; color: #222; }
@@ -16,111 +16,196 @@
     .ok { color: #0a7b34; }
     .err { color: #b00020; }
     #status { margin-top: 12px; min-height: 20px; }
+    #adminPanel, #userPanel { margin-top: 32px; }
   </style>
 </head>
 <body>
   <h1>Výběr seminářů</h1>
-  <p>Zadej své ID a vyber si seminář. Odešle se na backend a zkontroluje kapacitu.</p>
+  <p>Přihlas se emailem a vyber si tři priority seminářů.</p>
 
-  <div class="row">
-    <label for="studentId">ID studenta:</label>
-    <input id="studentId" placeholder="např. 12345" />
-    <label for="seminarSelect">Seminář:</label>
-    <select id="seminarSelect"></select>
-    <button id="chooseBtn">Vybrat</button>
-  </div>
+  <label for="emailInput">Email:</label>
+  <input id="emailInput" placeholder="prijmeni.jmeno@novyporg.cz" type="email" />
+
+  <button id="loginBtn">Přihlásit se</button>
 
   <div id="status"></div>
 
-  <h2>Dostupné semináře</h2>
-  <div id="list" class="grid"></div>
+  <div id="userPanel" style="display:none;">
+    <h2>Vyber tři priority</h2>
+    <select id="select1"></select>
+    <select id="select2"></select>
+    <select id="select3"></select>
+    <button id="submitBtn">Odeslat priority</button>
+  </div>
 
-  <script>
-    const listEl = document.getElementById('list');
-    const selEl = document.getElementById('seminarSelect');
-    const statusEl = document.getElementById('status');
-    const idEl = document.getElementById('studentId');
-    const chooseBtn = document.getElementById('chooseBtn');
+  <div id="result" style="margin-top:20px"></div>
 
-    function setStatus(msg, type='') {
-      statusEl.className = type;
-      statusEl.textContent = msg;
-    }
+  <div id="adminPanel" style="display:none;">
+    <h2>Admin Panel</h2>
+    <button id="closeRegBtn">Uzavřít registraci a vyhodnotit</button>
+    <h3>Aktuální registrace</h3>
+    <pre id="registrations"></pre>
+  </div>
 
-    async function loadSeminars() {
-      setStatus('Načítám semináře...');
-      try {
-        const res = await fetch('/api/seminars');
-        const data = await res.json();
-        const seminars = data.seminars || [];
+<script>
+  const loginBtn = document.getElementById('loginBtn');
+  const emailInput = document.getElementById('emailInput');
+  const status = document.getElementById('status');
+  const userPanel = document.getElementById('userPanel');
+  const adminPanel = document.getElementById('adminPanel');
+  const select1 = document.getElementById('select1');
+  const select2 = document.getElementById('select2');
+  const select3 = document.getElementById('select3');
+  const submitBtn = document.getElementById('submitBtn');
+  const registrations = document.getElementById('registrations');
+  const closeRegBtn = document.getElementById('closeRegBtn');
+  const resultDiv = document.getElementById('result');
 
-        selEl.innerHTML = '';
-        for (const s of seminars) {
-          const opt = document.createElement('option');
-          const teachers = (s.lecturers && s.lecturers.length) ? ` — ${s.lecturers.join(', ')}` : '';
-          opt.value = s.id;
-          opt.textContent = `${s.name}${teachers} (volno: ${s.remaining}/${s.capacity})`;
-          opt.disabled = s.remaining <= 0;
-          selEl.appendChild(opt);
-        }
+  let seminars = [];
+  let loggedInEmail = '';
 
-        listEl.innerHTML = '';
-        for (const s of seminars) {
-          const card = document.createElement('div');
-          const teachers = (s.lecturers && s.lecturers.length) ? `Vyučující: ${s.lecturers.join(', ')}` : '';
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="name">${s.name}</div>
-            ${teachers ? `<div class="dim">${teachers}</div>` : ''}
-            <div class="dim">Kapacita: ${s.capacity}</div>
-            <div>${s.remaining > 0
-              ? `<span class="ok">Volná místa: ${s.remaining}</span>`
-              : `<span class="err">Plno</span>`}
-            </div>
-          `;
-          listEl.appendChild(card);
-        }
-        setStatus('Načteno.');
-      } catch (e) {
-        setStatus('Chyba při načítání seznamu.', 'err');
-      }
-    }
+  function setStatus(msg, error=false) {
+    status.textContent = msg;
+    status.style.color = error ? 'red' : 'green';
+  }
 
-    document.getElementById('chooseBtn').addEventListener('click', async () => {
-      const studentId = idEl.value.trim();
-      const seminarId = selEl.value;
+  async function loadSeminars() {
+    try {
+      const res = await fetch('/api/seminars');
+      const data = await res.json();
+      seminars = data.seminars || [];
 
-      if (!studentId) {
-        setStatus('Vyplň ID studenta.', 'err');
-        return;
-      }
-      if (!seminarId) {
-        setStatus('Vyber seminář.', 'err');
-        return;
-      }
+      [select1, select2, select3].forEach(sel => {
+        sel.innerHTML = '';
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Vyber seminář';
+        sel.appendChild(defaultOption);
 
-      setStatus('Odesílám volbu...');
-      try {
-        const res = await fetch('/api/selections', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ studentId, seminarId: Number(seminarId) })
+        seminars.forEach(s => {
+          const option = document.createElement('option');
+          option.value = s.id;
+          option.textContent = `${s.name} — ${s.lecturers.join(', ')}`;
+          sel.appendChild(option);
         });
+      });
+    } catch {
+      setStatus('Chyba při načítání seminářů', true);
+    }
+  }
 
-        const data = await res.json();
-        if (res.ok) {
-          setStatus(data.message || 'Volba uložena.', 'ok');
-          await loadSeminars();
-        } else {
-          setStatus(data.error || 'Chyba při ukládání.', 'err');
-          await loadSeminars();
-        }
-      } catch (e) {
-        setStatus('Chyba připojení k serveru.', 'err');
+  loginBtn.addEventListener('click', () => {
+    const email = emailInput.value.trim().toLowerCase();
+    if (!email) {
+      setStatus('Vyplň email', true);
+      return;
+    }
+
+    loggedInEmail = email;
+    setStatus('');
+
+    if(email === 'admin') {
+      userPanel.style.display = 'none';
+      adminPanel.style.display = 'block';
+      loadAdminData();
+    } else {
+      userPanel.style.display = 'block';
+      adminPanel.style.display = 'none';
+      loadResult();
+      loadSeminars();
+    }
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    // Validace vybraných seminářů
+    const p1 = select1.value, p2 = select2.value, p3 = select3.value;
+    if(!p1 || !p2 || !p3 || p1 === p2 || p1 === p3 || p2 === p3) {
+      setStatus('Vyber prosím tři různé priority', true);
+      return;
+    }
+
+    setStatus('Odesílám priority...');
+    try {
+      const res = await fetch('/api/selections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loggedInEmail, priorities: [Number(p1), Number(p2), Number(p3)] })
+      });
+
+      const data = await res.json();
+      if(res.ok) {
+        setStatus(data.message || 'Priority uloženy');
+        await loadResult();
+      } else {
+        setStatus(data.error || 'Chyba při ukládání', true);
       }
-    });
 
-    loadSeminars();
-  </script>
+    } catch {
+      setStatus('Chyba připojení k serveru', true);
+    }
+  });
+
+  async function loadAdminData() {
+    try {
+      const res = await fetch('/api/admin/selections?secret=adminsecret');
+      const data = await res.json();
+      if(res.ok) {
+        registrations.textContent = JSON.stringify(data.selections, null, 2);
+        if(!data.registrationOpen) {
+          setStatus('Registrace uzavřena.', false);
+          loadResult();
+        } else {
+          setStatus('Registrace otevřena.', false);
+        }
+      } else {
+        setStatus(data.error || 'Chyba', true);
+      }
+    } catch {
+      setStatus('Chyba připojení k serveru', true);
+    }
+  }
+
+  closeRegBtn.addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/admin/close?secret=adminsecret', { method: 'POST' });
+      const data = await res.json();
+      if(res.ok) {
+        setStatus(data.message || 'Registrace byla uzavřena a vyhodnocena');
+        loadAdminData();
+      } else {
+        setStatus(data.error || 'Nepodařilo se uzavřít registraci', true);
+      }
+    } catch {
+      setStatus('Chyba připojení k serveru', true);
+    }
+  });
+
+  async function loadResult() {
+    if (!loggedInEmail || loggedInEmail === 'admin') {
+      resultDiv.textContent = '';
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/result?email=${encodeURIComponent(loggedInEmail)}`);
+      const data = await res.json();
+      if (res.ok && data.seminarId) {
+        const seminář = seminars.find(s => s.id === data.seminarId);
+        if(seminář){
+          resultDiv.textContent = `Byl/a jsi přijat/a na seminář: ${seminář.name}`;
+        } else {
+          resultDiv.textContent = 'Na žádný seminář jste nebyl/a přijat/a.';
+        }
+      } else {
+        resultDiv.textContent = 'Na žádný seminář jste nebyl/a přijat/a.';
+      }
+    } catch {
+      resultDiv.textContent = 'Chyba při načítání výsledku.';
+    }
+  }
+
+  // Načtení seminářů při startu stránky
+  loadSeminars();
+</script>
 </body>
 </html>
