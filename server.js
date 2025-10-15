@@ -1,118 +1,82 @@
 // server.js
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
-
-const DATA_PATH = path.join(__dirname, 'data.json');
-const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
+
+// Kurzy s kapacitou 20 a sjednocenými vyučujícími (pole stringů)
+const seminars = [
+  { id: 1,  name: "Otevřená laboratoř", lecturers: ["Miroslav Pražienka"], capacity: 20 },
+  { id: 2,  name: "Praktická Biologie: od buněk k ekosystémům", lecturers: ["Marek Kasner"], capacity: 20 },
+  { id: 3,  name: "Nutritional Anthropology", lecturers: ["Melanie Rada"], capacity: 20 },
+  { id: 4,  name: "Southern Gothic Literature – Writings from the Peach State", lecturers: ["Melanie Rada"], capacity: 20 },
+  { id: 5,  name: "Seminář vizuální tvorby", lecturers: ["Olga Vršková"], capacity: 20 },
+  { id: 6,  name: "Public Speaking and Debate", lecturers: ["Petra Schmalzová"], capacity: 20 },
+  { id: 7,  name: "Seminář tvůrčího překladu a tvůrčího psaní", lecturers: ["Petr Fantys", "Marek Šindelka"], capacity: 20 },
+  { id: 8,  name: "Antistres – tělo, dýchání, mysl", lecturers: ["Petra Vágnerová", "Petr Knotek"], capacity: 20 },
+  { id: 9,  name: "Seminář Zajímavá matematika", lecturers: ["Štěpánka Svobodová"], capacity: 20 },
+  { id: 10, name: "Seminář Základy latiny", lecturers: ["Tereza Samková"], capacity: 20 },
+  { id: 11, name: "Seminář Úvod do moderní psychologie", lecturers: [], capacity: 20 }
+];
+
+// Uložené volby v paměti
+const selections = [];
+
+// Statické soubory (frontend)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Load or initialize data
-function readData() {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    console.error('Failed to read data.json, creating default structure.', err);
-    const initial = { options: [] };
-    fs.writeFileSync(DATA_PATH, JSON.stringify(initial, null, 2));
-    return initial;
-  }
-}
-function writeData(data) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-}
-
-// In-memory SSE clients
-const clients = new Set();
-
-// Simple rate limiter: per-IP sliding window (demo only)
-const rateMap = new Map();
-const WINDOW_MS = 10_000; // 10s
-const MAX_PER_WINDOW = 10;
-
-function allowed(ip) {
-  const now = Date.now();
-  let rec = rateMap.get(ip);
-  if (!rec || now - rec.start > WINDOW_MS) {
-    rec = { start: now, count: 0 };
-  }
-  rec.count++;
-  rateMap.set(ip, rec);
-  return rec.count <= MAX_PER_WINDOW;
-}
-
-// Send update to all SSE clients
-function broadcast(payload) {
-  const msg = `data: ${JSON.stringify(payload)}\n\n`;
-  for (const res of clients) {
-    try {
-      res.write(msg);
-    } catch (err) {
-      // ignore; will be cleaned on 'close'
-    }
-  }
-}
-
-// API: get options
-app.get('/api/options', (req, res) => {
-  const data = readData();
-  res.json({ options: data.options });
-});
-
-// API: increment an option (add an entry)
-app.post('/api/options/:id/click', (req, res) => {
-  const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-  if (!allowed(ip)) {
-    return res.status(429).json({ error: 'rate limit exceeded' });
-  }
-
-  const id = req.params.id;
-  const data = readData();
-  const opt = data.options.find(o => o.id === id);
-  if (!opt) {
-    return res.status(404).json({ error: 'option not found' });
-  }
-
-  // increment count (this represents "adding an entry")
-  opt.count = (opt.count || 0) + 1;
-  writeData(data);
-
-  // broadcast the updated option to all clients
-  broadcast({ type: 'update', option: { id: opt.id, count: opt.count } });
-
-  res.json({ success: true, option: opt });
-});
-
-// SSE endpoint for real-time updates
-app.get('/events', (req, res) => {
-  // headers for SSE
-  res.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-    'Access-Control-Allow-Origin': '*'
+// API: seznam seminářů s počtem zbývajících míst
+app.get('/api/seminars', (_req, res) => {
+  const payload = seminars.map(s => {
+    const taken = selections.filter(x => x.seminarId === s.id).length;
+    return {
+      id: s.id,
+      name: s.name,
+      lecturers: s.lecturers,
+      capacity: s.capacity,
+      remaining: Math.max(0, s.capacity - taken)
+    };
   });
-  res.flushHeaders();
-
-  // send initial snapshot
-  const data = readData();
-  res.write(`event: init\n`);
-  res.write(`data: ${JSON.stringify({ options: data.options })}\n\n`);
-
-  // add to clients set
-  clients.add(res);
-
-  // cleanup on close
-  req.on('close', () => {
-    clients.delete(res);
-  });
+  res.json({ seminars: payload });
 });
 
-// Start server
+// API: odeslání volby studenta
+app.post('/api/selections', (req, res) => {
+  const { studentId, seminarId } = req.body || {};
+
+  if (!studentId || !seminarId) {
+    return res.status(400).json({ error: 'Chybí studentId nebo seminarId' });
+  }
+  const sem = seminars.find(s => s.id === Number(seminarId));
+  if (!sem) {
+    return res.status(404).json({ error: 'Seminář neexistuje' });
+  }
+
+  // Už má student tuto volbu?
+  const already = selections.find(
+    (x) => String(x.studentId) === String(studentId) && x.seminarId === sem.id
+  );
+  if (already) {
+    return res.status(200).json({ ok: true, message: 'Volba už je uložena' });
+  }
+
+  // Kapacita
+  const taken = selections.filter(x => x.seminarId === sem.id).length;
+  if (taken >= sem.capacity) {
+    return res.status(409).json({ error: 'Kapacita plná' });
+  }
+
+  selections.push({ studentId: String(studentId), seminarId: sem.id });
+  return res.status(201).json({ ok: true, message: 'Volba uložena' });
+});
+
+// SPA fallback na index.html
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Clicker local server running on http://localhost:${PORT}`);
+  console.log(`Server běží na http://localhost:${PORT}`);
 });
