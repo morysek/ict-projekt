@@ -1,27 +1,128 @@
 <!doctype html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Liquid Glass Selector — Local</title>
-  <link rel="stylesheet" href="/styles.css">
+  <title>Výběr seminářů</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; color: #222; }
+    h1 { margin-bottom: 8px; }
+    .row { display: flex; gap: 16px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+    input, button, select { padding: 8px 10px; font-size: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #fff; }
+    .name { font-weight: 600; margin-bottom: 6px; }
+    .dim { color: #666; font-size: 14px; }
+    .ok { color: #0a7b34; }
+    .err { color: #b00020; }
+    #status { margin-top: 12px; min-height: 20px; }
+  </style>
 </head>
 <body>
-  <main id="app" class="app">
-    <header class="topbar">
-      <h1 class="title">Choose your object</h1>
-      <p class="subtitle">Click an item, then press the button to add an entry. Live updates across tabs.</p>
-    </header>
+  <h1>Výběr seminářů</h1>
+  <p>Zadej své ID a vyber si seminář. Odešle se na backend a zkontroluje kapacitu.</p>
 
-    <section id="options" class="options" aria-live="polite" aria-atomic="true"></section>
+  <div class="row">
+    <label for="studentId">ID studenta:</label>
+    <input id="studentId" placeholder="např. 12345" />
+    <label for="seminarSelect">Seminář:</label>
+    <select id="seminarSelect"></select>
+    <button id="chooseBtn">Vybrat</button>
+  </div>
 
-    <div id="floating" class="floating" aria-hidden="true">
-      <button id="actionBtn" class="glass-btn">Confirm selection</button>
-    </div>
+  <div id="status"></div>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  </main>
+  <h2>Dostupné semináře</h2>
+  <div id="list" class="grid"></div>
 
-  <script type="module" src="/app.js"></script>
+  <script>
+    const listEl = document.getElementById('list');
+    const selEl = document.getElementById('seminarSelect');
+    const statusEl = document.getElementById('status');
+    const idEl = document.getElementById('studentId');
+    const chooseBtn = document.getElementById('chooseBtn');
+
+    function setStatus(msg, type='') {
+      statusEl.className = type;
+      statusEl.textContent = msg;
+    }
+
+    async function loadSeminars() {
+      setStatus('Načítám semináře...');
+      try {
+        const res = await fetch('/api/seminars');
+        const data = await res.json();
+        const seminars = data.seminars || [];
+
+        // Naplnění selectu
+        selEl.innerHTML = '';
+        for (const s of seminars) {
+          const opt = document.createElement('option');
+          const teachers = (s.lecturers && s.lecturers.length) ? ` — ${s.lecturers.join(', ')}` : '';
+          opt.value = s.id;
+          opt.textContent = `${s.name}${teachers} (volno: ${s.remaining}/${s.capacity})`;
+          opt.disabled = s.remaining <= 0;
+          selEl.appendChild(opt);
+        }
+
+        // Karty do gridu
+        listEl.innerHTML = '';
+        for (const s of seminars) {
+          const card = document.createElement('div');
+          const teachers = (s.lecturers && s.lecturers.length) ? `Vyučující: ${s.lecturers.join(', ')}` : '';
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="name">${s.name}</div>
+            ${teachers ? `<div class="dim">${teachers}</div>` : ''}
+            <div class="dim">Kapacita: ${s.capacity}</div>
+            <div>${s.remaining > 0
+              ? `<span class="ok">Volná místa: ${s.remaining}</span>`
+              : `<span class="err">Plno</span>`}
+            </div>
+          `;
+          listEl.appendChild(card);
+        }
+        setStatus('Načteno.');
+      } catch (e) {
+        setStatus('Chyba při načítání seznamu.', 'err');
+      }
+    }
+
+    chooseBtn.addEventListener('click', async () => {
+      const studentId = idEl.value.trim();
+      const seminarId = selEl.value;
+
+      if (!studentId) {
+        setStatus('Vyplň ID studenta.', 'err');
+        return;
+      }
+      if (!seminarId) {
+        setStatus('Vyber seminář.', 'err');
+        return;
+      }
+
+      setStatus('Odesílám volbu...');
+      try {
+        const res = await fetch('/api/selections', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ studentId, seminarId: Number(seminarId) })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setStatus(data.message || 'Volba uložena.', 'ok');
+          await loadSeminars();
+        } else {
+          setStatus(data.error || 'Chyba při ukládání.', 'err');
+          await loadSeminars();
+        }
+      } catch (e) {
+        setStatus('Chyba připojení k serveru.', 'err');
+      }
+    });
+
+    loadSeminars();
+  </script>
 </body>
 </html>
