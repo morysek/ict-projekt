@@ -54,7 +54,6 @@
         const data = await res.json();
         const seminars = data.seminars || [];
 
-        // Naplnění selectu
         selEl.innerHTML = '';
         for (const s of seminars) {
           const opt = document.createElement('option');
@@ -65,7 +64,6 @@
           selEl.appendChild(opt);
         }
 
-        // Karty do gridu
         listEl.innerHTML = '';
         for (const s of seminars) {
           const card = document.createElement('div');
@@ -88,7 +86,7 @@
       }
     }
 
-    chooseBtn.addEventListener('click', async () => {
+    document.getElementById('chooseBtn').addEventListener('click', async () => {
       const studentId = idEl.value.trim();
       const seminarId = selEl.value;
 
