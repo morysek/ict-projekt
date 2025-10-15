@@ -1,11 +1,9 @@
-// server.js
 const express = require('express');
 const path = require('path');
 
 const app = express();
-app.use(express.json());
 
-// Kurzy s kapacitou 20 a sjednocenými vyučujícími (pole stringů)
+// Data o kurzech a vyučujících
 const seminars = [
   { id: 1,  name: "Otevřená laboratoř", lecturers: ["Miroslav Pražienka"], capacity: 20 },
   { id: 2,  name: "Praktická Biologie: od buněk k ekosystémům", lecturers: ["Marek Kasner"], capacity: 20 },
@@ -20,15 +18,15 @@ const seminars = [
   { id: 11, name: "Seminář Úvod do moderní psychologie", lecturers: [], capacity: 20 }
 ];
 
-// Uložené volby v paměti
+// Seznam již vybrané (uložené) volby
 const selections = [];
 
-// Statické soubory (frontend)
+// Statické soubory v adresáři public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API: seznam seminářů s počtem zbývajících míst
-app.get('/api/seminars', (_req, res) => {
-  const payload = seminars.map(s => {
+// API: seznam kurzů s dostupností
+app.get('/api/seminars', (req, res) => {
+  const data = seminars.map(s => {
     const taken = selections.filter(x => x.seminarId === s.id).length;
     return {
       id: s.id,
@@ -38,40 +36,39 @@ app.get('/api/seminars', (_req, res) => {
       remaining: Math.max(0, s.capacity - taken)
     };
   });
-  res.json({ seminars: payload });
+  res.json({ seminars: data });
 });
 
-// API: odeslání volby studenta
+// API: uložit volbu
 app.post('/api/selections', (req, res) => {
   const { studentId, seminarId } = req.body || {};
 
   if (!studentId || !seminarId) {
     return res.status(400).json({ error: 'Chybí studentId nebo seminarId' });
   }
-  const sem = seminars.find(s => s.id === Number(seminarId));
-  if (!sem) {
-    return res.status(404).json({ error: 'Seminář neexistuje' });
+
+  const s = seminars.find(s => s.id === Number(seminarId));
+  if (!s) {
+    return res.status(404).json({ error: 'Kurz neexistuje' });
   }
 
-  // Už má student tuto volbu?
-  const already = selections.find(
-    (x) => String(x.studentId) === String(studentId) && x.seminarId === sem.id
-  );
-  if (already) {
-    return res.status(200).json({ ok: true, message: 'Volba už je uložena' });
+  // Kontrola, zda student již volbu neprovedl
+  if (selections.some(x => x.studentId === String(studentId) && x.seminarId === s.id)) {
+    return res.json({ ok: true, message: 'Volba již existuje' });
   }
 
-  // Kapacita
-  const taken = selections.filter(x => x.seminarId === sem.id).length;
-  if (taken >= sem.capacity) {
-    return res.status(409).json({ error: 'Kapacita plná' });
+  // Kontrola kapacity
+  const booked = selections.filter(x => x.seminarId === s.id).length;
+  if (booked >= s.capacity) {
+    return res.status(409).json({ error: 'Kapacita je plná' });
   }
 
-  selections.push({ studentId: String(studentId), seminarId: sem.id });
-  return res.status(201).json({ ok: true, message: 'Volba uložena' });
+  // Uložit volbu
+  selections.push({ studentId: String(studentId), seminarId: s.id });
+  res.status(201).json({ ok: true, message: 'Volba uložena' });
 });
 
-// SPA fallback na index.html
+// Přesměrování všeho na index.html
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
