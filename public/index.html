@@ -2,249 +2,149 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Výběr seminářů</title>
-<link href="https://fonts.googleapis.com/css?family=Roboto:400,600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body { background: #f4f7fa; font-family: 'Roboto', Arial, sans-serif; color: #222; margin:0;padding:0;}
-.main { max-width:550px; background: #fff; margin:40px auto 0 auto; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,0.14); padding:32px 36px 30px;}
-h1 {text-align:center; font-size:2em; margin-bottom:16px;font-weight:600;}
+body {font-family:sans-serif;background:#f4f7fa;margin:0;padding:0;}
+.main {max-width:470px;margin:40px auto 0 auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px #0002;padding:40px 26px 32px;}
+h1 {margin-top:0;text-align:center;}
 label {font-weight:600;}
-input, button, select {padding:10px 12px; font-size:16px; border-radius:7px; border:1px solid #ccc; outline:none;}
-input[type=text] {width: 90%;}
-button {background:#0a7b34; color:#fff; font-weight:600; border:none; cursor:pointer; transition:.22s;}
-button:disabled {background: #b5cca6; cursor:not-allowed;}
-select {width:98%;margin-bottom:12px;}
-.status { min-height:22px; text-align:center; margin: 12px 0; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin: 0 0 30px 0;}
-.card { border:1.2px solid #dadada; border-radius:9px; padding:12px 10px; background:#fafafb; }
-.card .name { font-weight:600; margin-bottom:3px;}
-.card .dim { color:#666;font-size:.96em; }
-.priority-label { font-weight:600; margin-top:12px; display:block;}
-#prioritySelects select {margin-bottom:10px;}
-#loginPanel, #votePanel, #adminPanel, #resultPanel {display:none;}
-#adminTable {width:100%;border-collapse:collapse;font-size:15px;}
-#adminTable th, #adminTable td {border:1px solid #dadada;padding:6px 10px; }
+input, select, button {padding:10px 12px;font-size:16px; border-radius:7px; border:1px solid #ccc; outline:none;}
+input[type=text]{width:84%;}
+button{background:#1a822b;color:#fff;font-weight:600;border:none;cursor:pointer;}
+button:disabled{background:#b5cca6;cursor:not-allowed;}
+.status{min-height:22px;text-align:center;}
+#adminTable{width:100%;margin-top:10px;border-collapse:collapse;}
+#adminTable th,#adminTable td{border:1px solid #dadada;padding:8px;}
 #adminTable th{background:#e7f0e2;}
-.row-won {background:#e8fce8 !important;}
-.row-lost { background:#fdead4 !important;}
-.strong { font-weight:600;}
+.row-won{background:#e8fce8 !important;}
+.row-lost{background:#ffeee6 !important;}
+.priority-label{font-weight:700;display:block;margin:12px 0 4px;}
+.panel{display:none;}
 </style>
 </head>
 <body>
 <div class="main">
   <h1>Výběr seminářů</h1>
 
-  <div id="loginPanel">
+  <div id="loginPanel" class="panel">
     <label for="usernameIn">Přihlašovací jméno (prijmeni.jmeno):</label>
     <input type="text" id="usernameIn" maxlength="40" autocomplete="off">
     <button id="loginBtn">Přihlásit</button>
     <div class="status" id="statusLogin"></div>
   </div>
-
-  <div id="votePanel">
-    <h3>Vyber své 3 priority</h3>
+  
+  <div id="votePanel" class="panel">
     <form id="voteForm">
-      <div id="prioritySelects">
-        <label class="priority-label">1. Priorita</label>
-        <select id="priority1"></select>
-        <label class="priority-label">2. Priorita</label>
-        <select id="priority2"></select>
-        <label class="priority-label">3. Priorita</label>
-        <select id="priority3"></select>
-      </div>
+      <label class="priority-label">1. priorita</label>
+      <select id="priority1"></select>
+      <label class="priority-label">2. priorita</label>
+      <select id="priority2"></select>
+      <label class="priority-label">3. priorita</label>
+      <select id="priority3"></select>
       <button type="submit" id="submitVoteBtn">Odeslat priority</button>
       <div class="status" id="statusVote"></div>
     </form>
   </div>
 
-  <div id="resultPanel">
-    <div id="resultMessage" class="status"></div>
-    <button id="backToLoginBtn">Přihlásit jiného uživatele</button>
-  </div>
-
-  <div id="adminPanel">
+  <div id="adminPanel" class="panel">
     <h3>Admin: přihlášky a výsledky</h3>
     <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
     <div class="status" id="statusAdmin"></div>
     <table id="adminTable"></table>
-    <button id="backToLoginAdminBtn">Přihlásit jiného uživatele</button>
+    <button id="backToLoginAdminBtn">Odhlásit a přihlásit jiného</button>
   </div>
 </div>
 
 <script>
-const loginPanel = document.getElementById('loginPanel');
-const votePanel = document.getElementById('votePanel');
-const resultPanel = document.getElementById('resultPanel');
-const adminPanel = document.getElementById('adminPanel');
-const usernameIn = document.getElementById('usernameIn');
-const loginBtn = document.getElementById('loginBtn');
-const statusLogin = document.getElementById('statusLogin');
-const submitVoteBtn = document.getElementById('submitVoteBtn');
-const voteForm = document.getElementById('voteForm');
-const statusVote = document.getElementById('statusVote');
-const priority1 = document.getElementById('priority1');
-const priority2 = document.getElementById('priority2');
-const priority3 = document.getElementById('priority3');
-const resultMessage = document.getElementById('resultMessage');
-const backToLoginBtn = document.getElementById('backToLoginBtn');
-const adminTable = document.getElementById('adminTable');
-const evaluateBtn = document.getElementById('evaluateBtn');
-const backToLoginAdminBtn = document.getElementById('backToLoginAdminBtn');
-const statusAdmin = document.getElementById('statusAdmin');
-let seminars = [];
-let username = "";
-let isAdmin = false;
+const loginPanel=document.getElementById('loginPanel');
+const votePanel=document.getElementById('votePanel');
+const adminPanel=document.getElementById('adminPanel');
+const usernameIn=document.getElementById('usernameIn');
+const loginBtn=document.getElementById('loginBtn');
+const statusLogin=document.getElementById('statusLogin');
+const voteForm=document.getElementById('voteForm');
+const statusVote=document.getElementById('statusVote');
+const priority1=document.getElementById('priority1');
+const priority2=document.getElementById('priority2');
+const priority3=document.getElementById('priority3');
+const submitVoteBtn=document.getElementById('submitVoteBtn');
+const adminTable=document.getElementById('adminTable');
+const evaluateBtn=document.getElementById('evaluateBtn');
+const backToLoginAdminBtn=document.getElementById('backToLoginAdminBtn');
 
-function clearPanels() {
-  loginPanel.style.display = 'none';
-  votePanel.style.display = 'none';
-  resultPanel.style.display = 'none';
-  adminPanel.style.display = 'none';
+let seminars=[],username="",isAdmin=false;
+
+function show(panel){ for(const p of document.querySelectorAll('.panel'))p.style.display='none'; document.getElementById(panel).style.display='block'; }
+function fillPrioritySelects(){
+  [priority1,priority2,priority3].forEach((sel,ix)=>{
+    sel.innerHTML='';
+    const dOpt=document.createElement('option');dOpt.value='';dOpt.textContent='Vyber seminář';sel.appendChild(dOpt);
+    seminars.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=`${s.name} — ${s.lecturers.join(', ')}`;sel.appendChild(o);});
+  });
 }
 
-function show(panelName) {
-  clearPanels();
-  document.getElementById(panelName).style.display = '';
+async function fetchSeminars(){ 
+  const r=await fetch('/api/seminars'); 
+  const d=await r.json(); 
+  seminars=d.seminars; 
+  fillPrioritySelects(); 
 }
 
-function fillPrioritySelects() {
-  for(const sel of [priority1, priority2, priority3]) {
-    sel.innerHTML = '';
-    const defaultOpt = document.createElement('option');
-    defaultOpt.value = '';
-    defaultOpt.textContent = 'Vyber seminář';
-    sel.appendChild(defaultOpt);
-
-    seminars.forEach(s=>{
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = `${s.name} — ${s.lecturers.join(', ')}`;
-      sel.appendChild(opt);
-    });
-  }
-}
-
-async function fetchSeminars() {
-  let res = await fetch('/api/seminars');
-  let data = await res.json();
-  seminars = data.seminars;
-  fillPrioritySelects();
-}
-fetchSeminars();
-
-loginBtn.onclick = () => {
-  statusLogin.textContent = '';
-  let uname = (usernameIn.value||"").trim().toLowerCase();
-  if(!uname) return statusLogin.textContent = 'Zadej uživatelské jméno!';
-  if(uname==="admin") {
-    isAdmin = true;
-    loadAdminPanel();
-    show('adminPanel');
-    return;
-  }
-  // Validace formátu
-  if(!/^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/.test(uname)) {
-    statusLogin.textContent = 'Použij formát prijmeni.jmeno';
-    return;
-  }
-  username = uname;
-  fillPrioritySelects();
+loginBtn.onclick=()=>{
+  statusLogin.textContent='';
+  let uname=(usernameIn.value||"").trim().toLowerCase();
+  if(!uname)return statusLogin.textContent='Zadej uživatelské jméno!';
+  if(uname==="admin"){ isAdmin=true;loadAdminPanel();show('adminPanel');return; }
+  if(!/^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/.test(uname)){ statusLogin.textContent='Použij formát prijmeni.jmeno';return; }
+  username=uname;
+  fetchSeminars();
   show('votePanel');
 };
 
-voteForm.onsubmit = async e=>{
-  e.preventDefault();
-  statusVote.textContent = '';
-  const p1 = Number(priority1.value), p2 = Number(priority2.value), p3 = Number(priority3.value);
-  if(!p1 || !p2 || !p3) { statusVote.textContent='Vyber 3 různé semináře'; return; }
-  if(p1===p2 || p1===p3 || p2===p3) { statusVote.textContent='Vyber 3 různé semináře'; return; }
-  submitVoteBtn.disabled = true;
-  let res = await fetch('/api/select', {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({username,priorities:[p1,p2,p3]})
-  });
-  let data = await res.json();
-  if(res.ok) {
-    statusVote.textContent = "";
-    show('resultPanel');
-    resultMessage.textContent = "Priority uloženy!";    
-  } else {
-    statusVote.textContent = data.error||'Chyba při ukládání';
-  }
-  submitVoteBtn.disabled = false;
+voteForm.onsubmit=async e=>{
+  e.preventDefault();statusVote.textContent='';submitVoteBtn.disabled=true;
+  const p1=Number(priority1.value),p2=Number(priority2.value),p3=Number(priority3.value);
+  if(!p1||!p2||!p3||new Set([p1,p2,p3]).size!==3){statusVote.textContent='Vyber 3 různé semináře';submitVoteBtn.disabled=false;return;}
+  let res=await fetch('/api/select',{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,priorities:[p1,p2,p3]})});
+  let data=await res.json();
+  if(res.ok) { statusVote.textContent="Výběr uložen."; setTimeout(()=>{show('loginPanel');usernameIn.value="";},1100); }
+  else statusVote.textContent=data.error||'Chyba při ukládání';
+  submitVoteBtn.disabled=false;
 };
 
-backToLoginBtn.onclick = resetLogin;
-backToLoginAdminBtn.onclick = resetLogin;
-
-function resetLogin() {
-  username="";
-  isAdmin=false;
-  usernameIn.value="";
-  statusLogin.textContent="";
-  show('loginPanel');
-}
-
-async function loadResult() {
-  if(!username) return;
-  let res = await fetch('/api/result?username='+encodeURIComponent(username));
-  let data = await res.json();
-  if(data.seminarId && seminars.length) {
-    let sem = seminars.find(s=>s.id===data.seminarId);
-    resultMessage.textContent = "Byl/a jsi přijat/a na seminář: "+sem.name;
-  } else {
-    resultMessage.textContent = "Vyhodnocení zatím neproběhlo nebo zatím nejsi přiřazený/á.";
-  }
-}
-
-function highlightAdminTable(adminData) {
-  if(!adminData.evaluationResult) return;
-  for(let r=1; r<adminTable.rows.length; ++r){
-    let uname = adminTable.rows[r].getAttribute('data-username');
-    let assigned = null;
-    Object.entries(adminData.evaluationResult).forEach(([seminarId,usernames])=>{
-      if(usernames.includes(uname)) assigned = Number(seminarId);
-    });
-    for(let c=1; c<=3; ++c) {
-      let td = adminTable.rows[r].cells[c];
-      let val = Number(td.textContent);
-      if(val && assigned===val){
-        td.className = "row-won";
-        adminTable.rows[r].cells[0].className = "row-won";
-      }
-      else td.className = "row-lost";
-    }
-  }
-}
-
-async function loadAdminPanel() {
+async function loadAdminPanel(){ 
   let res = await fetch('/api/admin/selections?secret=adminsecret');
-  let data = await res.json();
-  let users = data.selections;
-  adminTable.innerHTML = '<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th></tr>';
+  let data=await res.json(); let users=data.selections, evalRes=data.evaluationResult||{};
+  adminTable.innerHTML='<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th></tr>';
   users.forEach(u=>{
-    let tr = adminTable.insertRow(-1);
-    tr.setAttribute('data-username', u.username);
-    tr.insertCell().textContent = u.username;
-    u.priorities.forEach(p=>{
-      let sem = seminars.find(s=>s.id===p);
-      tr.insertCell().textContent = sem ? sem.id : "";
-    });
+    let tr=adminTable.insertRow(-1);tr.setAttribute('data-username',u.username); tr.insertCell().textContent=u.username;
+    u.priorities.forEach((p,ix)=>{ let sem=seminars.find(s=>s.id===p); tr.insertCell().textContent=sem?sem.name:""; });
   });
-  if(!data.registrationOpen) highlightAdminTable(data);
-  statusAdmin.textContent = data.registrationOpen ? "Registrace otevřena." : "Registrace uzavřena a vyhodnocena!";
+  // Obarvení podle přiřazení
+  if(Object.keys(evalRes).length) {
+    for(let r=1;r<adminTable.rows.length;++r){
+      let uname=adminTable.rows[r].getAttribute('data-username');
+      let assigned=null;
+      Object.entries(evalRes).forEach(([sid,names])=>{ if(names.includes(uname)) assigned=Number(sid); });
+      for(let c=1;c<=3;++c){
+        let td=adminTable.rows[r].cells[c];
+        let cellSem=(seminars.find(s=>s.name===td.textContent)||{}).id;
+        if(cellSem && assigned===cellSem){ td.className="row-won"; adminTable.rows[r].cells[0].className="row-won"; }
+        else td.className="row-lost";
+      }
+    }
+    statusAdmin.textContent="Registrace uzavřena a vyhodnocena!";
+  }
+  else statusAdmin.textContent=data.registrationOpen ? "Registrace otevřena." : "";
 }
 
-evaluateBtn.onclick = async ()=>{
-  let res = await fetch('/api/admin/evaluate?secret=adminsecret', {method:"POST"});
-  let data = await res.json();
-  if(data.ok) {
-    statusAdmin.textContent = "Registrace uzavřena a vyhodnocena!";
-    await loadAdminPanel();
-  } else statusAdmin.textContent = data.error || "Chyba";
+evaluateBtn.onclick=async ()=>{
+  let res = await fetch('/api/admin/evaluate?secret=adminsecret', {method:"POST"}); 
+  if(res.ok) await loadAdminPanel();
 };
+
+backToLoginAdminBtn.onclick=()=>{ username="";isAdmin=false;usernameIn.value="";statusLogin.textContent="";show('loginPanel');}
 
 show('loginPanel');
 </script>
