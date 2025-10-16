@@ -98,5 +98,5 @@ function evaluateAssignments(users, seminars){
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => { console.log(`Server běží na http://localhost:${PORT}`); });
