@@ -50,6 +50,7 @@ button:disabled{background:#b5cca6;cursor:not-allowed;}
   <div id="adminPanel" class="panel">
     <h3>Admin: přihlášky a výsledky</h3>
     <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
+    <button id="reopenRegBtn">Otevřít registraci znovu</button>    
     <div class="status" id="statusAdmin"></div>
     <table id="adminTable"></table>
     <button id="backToLoginAdminBtn">Odhlásit a přihlásit jiného</button>
@@ -71,6 +72,7 @@ const priority3=document.getElementById('priority3');
 const submitVoteBtn=document.getElementById('submitVoteBtn');
 const adminTable=document.getElementById('adminTable');
 const evaluateBtn=document.getElementById('evaluateBtn');
+const reopenRegBtn=document.getElementById('reopenRegBtn');
 const backToLoginAdminBtn=document.getElementById('backToLoginAdminBtn');
 
 let seminars=[],username="",isAdmin=false;
@@ -108,29 +110,42 @@ voteForm.onsubmit=async e=>{
   if(!p1||!p2||!p3||new Set([p1,p2,p3]).size!==3){statusVote.textContent='Vyber 3 různé semináře';submitVoteBtn.disabled=false;return;}
   let res=await fetch('/api/select',{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,priorities:[p1,p2,p3]})});
   let data=await res.json();
-  if(res.ok) { statusVote.textContent="Výběr uložen."; setTimeout(()=>{show('loginPanel');usernameIn.value="";},1100); }
+  if(res.ok) { 
+    statusVote.textContent="Výběr uložen."; 
+    setTimeout(()=>{show('loginPanel');usernameIn.value="";},1100); 
+  }
   else statusVote.textContent=data.error||'Chyba při ukládání';
   submitVoteBtn.disabled=false;
 };
 
 async function loadAdminPanel(){ 
   let res = await fetch('/api/admin/selections?secret=adminsecret');
-  let data=await res.json(); let users=data.selections, evalRes=data.evaluationResult||{};
+  let data=await res.json(); 
+  let users=data.selections, evalRes=data.evaluationResult||{};
   adminTable.innerHTML='<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th></tr>';
   users.forEach(u=>{
-    let tr=adminTable.insertRow(-1);tr.setAttribute('data-username',u.username); tr.insertCell().textContent=u.username;
-    u.priorities.forEach((p,ix)=>{ let sem=seminars.find(s=>s.id===p); tr.insertCell().textContent=sem?sem.name:""; });
+    let tr=adminTable.insertRow(-1);
+    tr.setAttribute('data-username',u.username); 
+    tr.insertCell().textContent = u.username;
+    u.priorities.forEach((p,ix)=>{
+      let sem=seminars.find(s=>s.id===p);
+      tr.insertCell().textContent=sem?sem.name:"";
+    });
   });
-  // Obarvení podle přiřazení
-  if(Object.keys(evalRes).length) {
+  if(Object.keys(evalRes).length){
     for(let r=1;r<adminTable.rows.length;++r){
       let uname=adminTable.rows[r].getAttribute('data-username');
       let assigned=null;
-      Object.entries(evalRes).forEach(([sid,names])=>{ if(names.includes(uname)) assigned=Number(sid); });
+      Object.entries(evalRes).forEach(([sid,names])=>{
+        if(names.includes(uname)) assigned=Number(sid);
+      });
       for(let c=1;c<=3;++c){
         let td=adminTable.rows[r].cells[c];
         let cellSem=(seminars.find(s=>s.name===td.textContent)||{}).id;
-        if(cellSem && assigned===cellSem){ td.className="row-won"; adminTable.rows[r].cells[0].className="row-won"; }
+        if(cellSem && assigned===cellSem) {
+          td.className="row-won";
+          adminTable.rows[r].cells[0].className="row-won";
+        }
         else td.className="row-lost";
       }
     }
@@ -144,7 +159,22 @@ evaluateBtn.onclick=async ()=>{
   if(res.ok) await loadAdminPanel();
 };
 
-backToLoginAdminBtn.onclick=()=>{ username="";isAdmin=false;usernameIn.value="";statusLogin.textContent="";show('loginPanel');}
+reopenRegBtn.onclick=async ()=>{
+  let res = await fetch('/api/admin/reopen?secret=adminsecret', {method:"POST"});
+  let data = await res.json();
+  if(res.ok) {
+    statusAdmin.textContent = data.message;
+    await loadAdminPanel();
+  } else statusAdmin.textContent = data.error || "Chyba při opětovném otevření registrace.";
+};
+
+backToLoginAdminBtn.onclick=()=>{
+  username="";
+  isAdmin=false;
+  usernameIn.value="";
+  statusLogin.textContent="";
+  show('loginPanel');
+}
 
 show('loginPanel');
 </script>
