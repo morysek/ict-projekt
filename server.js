@@ -19,7 +19,7 @@ const seminars = [
 
 let registrationOpen = true;
 const selections = [];
-let evaluationResult = {}; // { seminarId: [username, ...] }
+let evaluationResult = {};
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -38,11 +38,9 @@ app.post('/api/select', (req, res) => {
       priorities.some(id => !seminars.some(s => s.id === id))
   ) return res.status(400).json({ error: 'Vyberte tři různé platné semináře!' });
 
-  // Smazat starý výběr tohoto uživatele, pokud existuje
   const idx = selections.findIndex(u => u.username === username);
   if (idx >= 0) selections.splice(idx, 1);
 
-  // Uložit nový výběr
   selections.push({ username, priorities, timestamp: Date.now() });
   res.json({ ok: true, message: 'Výběr uložen.' });
 });
@@ -52,11 +50,20 @@ app.get('/api/admin/selections', (req, res) => {
   res.json({ selections, registrationOpen, evaluationResult });
 });
 
+// Uzavřít + vyhodnotit
 app.post('/api/admin/evaluate', (req, res) => {
   if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
   registrationOpen = false;
   evaluationResult = assignSeminars(selections, seminars);
-  res.json({ ok: true });
+  res.json({ ok: true, message: 'Registrace uzavřena a vyhodnocena.' });
+});
+
+// Otevřít registraci a zrušit vyhodnocení
+app.post('/api/admin/reopen', (req, res) => {
+  if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
+  registrationOpen = true;
+  evaluationResult = {};
+  res.json({ ok: true, message: 'Registrace znovu otevřena.' });
 });
 
 function assignSeminars(all, seminars) {
