@@ -1,10 +1,8 @@
 const express = require('express');
 const path = require('path');
-
 const app = express();
 app.use(express.json());
 
-// Data o kurzech
 const seminars = [
   { id: 1,  name: "Otevřená laboratoř", lecturers: ["Miroslav Pražienka"], capacity: 20 },
   { id: 2,  name: "Praktická Biologie: od buněk k ekosystémům", lecturers: ["Marek Kasner"], capacity: 20 },
@@ -19,115 +17,86 @@ const seminars = [
   { id: 11, name: "Seminář Úvod do moderní psychologie", lecturers: [], capacity: 20 }
 ];
 
-// Stav registrací
 let registrationOpen = true;
-
-// Uloženy výběry {email, priorities:[id1,id2,id3], timestamp}
+// username = "prijmeni.jmeno"
 const selections = [];
+let evaluationResult = {};
 
-// Statické soubory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API - Získat kurzy + dostupnost
 app.get('/api/seminars', (_req, res) => {
-  const data = seminars.map(s => {
-    const bookedCount = selections.filter(sel => sel.priorities.includes(s.id)).length;
-    return {
-      id: s.id,
-      name: s.name,
-      lecturers: s.lecturers,
-      capacity: s.capacity,
-      remaining: Math.max(0, s.capacity - bookedCount)
-    };
-  });
-  res.json({ seminars: data });
+  res.json({ seminars });
 });
 
-// API - Poslat volby
-app.post('/api/selections', (req, res) => {
-  if(!registrationOpen) {
-    return res.status(403).json({ error: 'Registrace je uzavřena' });
-  }
-
-  const { email, priorities } = req.body || {};
-  if(!email || !priorities || !Array.isArray(priorities) || priorities.length !== 3) {
-    return res.status(400).json({ error: 'Neplatný email nebo nedostatečné priority (potřebné 3)' });
-  }
-
-  // Validace emailu jednoduchou regex kontrolou
-  const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
-  if(!emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Neplatný formát emailu' });
-  }
-
-  // Už má uživatel vybrané?
-  const existing = selections.find(sel => sel.email === email);
-  if(existing) {
-    return res.status(409).json({ error: 'Tento email již má odeslané priority' });
-  }
-
-  selections.push({ email, priorities, timestamp: Date.now() });
-  res.json({ ok: true, message: 'Priority uloženy' });
-});
-
-// API - Admin - data přihlášení
+// Získání všech přihlášek a stavu pro admina
 app.get('/api/admin/selections', (req, res) => {
-  if(req.query.secret !== 'adminsecret') {
-    return res.status(403).json({ error: 'Přístup odepřen' });
-  }
-  res.json({ selections, registrationOpen });
+  if(req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
+  res.json({ selections, registrationOpen, evaluationResult });
 });
 
-// API - Admin - zavřít přihlašování a vyhodnotit
-app.post('/api/admin/close', (req, res) => {
-  if(req.query.secret !== 'adminsecret') {
-    return res.status(403).json({ error: 'Přístup odepřen' });
+app.post('/api/admin/evaluate', (req, res) => {
+  if(req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
+  registrationOpen = false;
+  evaluationResult = evaluateAssignments(selections, seminars);
+  res.json({ ok: true, message: 'Registrace uzavřena a přiřazeno.' });
+});
+
+// Přihlášení a nová přihláška/úprava (username: prijmeni.jmeno)
+app.post('/api/select', (req, res) => {
+  if(!registrationOpen) return res.status(403).json({ error: 'Registrace je uzavřena' });
+  const { username, priorities } = req.body || {};
+  const unameRegex = /^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/i;
+  if((username+"").toLowerCase() === "admin") return res.status(403).json({ error: 'Admin se takto nepřihlašuje.' });
+  if(!username || !unameRegex.test(username)) return res.status(400).json({ error: 'Špatný formát uživatelského jména, použij prijmeni.jmeno' });
+
+  if(!Array.isArray(priorities) || priorities.length !== 3) return res.status(400).json({ error: 'Musíš vybrat 3 různé semináře!' });
+
+  for(let i=0; i<3; ++i){
+    if(!seminars.some(s=>s.id===priorities[i])) return res.status(400).json({ error: 'Neplatné ID semináře!' });
+    if(priorities.filter(x=>x===priorities[i]).length >1) return res.status(400).json({ error: 'Semináře se nesmí opakovat!' });
   }
 
-  registrationOpen = false;
+  // Smazat starý výběr tohoto uživatele
+  const idx = selections.findIndex(u=>u.username===username);
+  if(idx>=0) selections.splice(idx,1);
 
-  // Vyhodnocení: udělejme jednoduché přiřazení podle priority + času
-  // Vytvoříme mapu {seminarId: []}
+  // Zapsat nový s časem
+  selections.push({ username, priorities, timestamp: Date.now() });
+  res.json({ ok: true, message: 'Výběr uložen, děkujeme.' });
+});
+
+// Získání výsledku pro uživatele po přihlášení
+app.get('/api/result', (req,res)=>{
+  const { username } = req.query;
+  if(!username) return res.status(400).json({ error: "Chybí username" });
+  // Pokud vyhodnoceno, zjisti kam byl přiřazen
+  if(Object.keys(evaluationResult).length) {
+    const val = Object.entries(evaluationResult).find(([seminarId, users]) => users.includes(username));
+    return res.json({ seminarId: val ? Number(val[0]) : null });
+  }
+  res.json({ seminarId: null });
+});
+
+// Základní evaluace podle priorit a timestamp
+function evaluateAssignments(users, seminars){
   const result = {};
-  seminars.forEach(s => result[s.id] = []);
+  seminars.forEach(s=>result[s.id]=[]);
+  const sorted = [...users].sort((a,b)=>a.timestamp-b.timestamp);
 
-  // Třídíme výběry podle data a pak podle priorit
-  const sortedSelections = [...selections].sort((a,b) => a.timestamp - b.timestamp);
-
-  sortedSelections.forEach(sel => {
-    for(let p of sel.priorities) {
-      if(result[p].length < seminars.find(s => s.id === p).capacity) {
-        result[p].push(sel.email);
+  sorted.forEach(sel => {
+    for(const preferred of sel.priorities){
+      if(result[preferred].length < seminars.find(s=>s.id===preferred).capacity){
+        result[preferred].push(sel.username);
         break;
       }
     }
   });
+  return result;
+}
 
-  // Výsledek uložíme pro zobrazení
-  app.locals.result = result;
-
-  res.json({ ok: true, message: 'Registrace uzavřena a vyhodnocena' });
-});
-
-// API - získat výsledek podle uživatele
-app.get('/api/result', (req, res) => {
-  const email = req.query.email;
-  if(!email) {
-    return res.status(400).json({ error: 'Chybí email' });
-  }
-  const resMap = app.locals.result || {};
-  const assigned = Object.entries(resMap).find(([seminarId, emails]) => emails.includes(email));
-
-  res.json({ seminarId: assigned ? Number(assigned[0]) : null });
-});
-
-
-// Vše ostatní na frontend
+// Frontend fallback
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server běží na http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => { console.log(`Server běží na http://localhost:${PORT}`); });
