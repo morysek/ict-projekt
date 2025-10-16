@@ -18,85 +18,64 @@ const seminars = [
 ];
 
 let registrationOpen = true;
-// username = "prijmeni.jmeno"
 const selections = [];
-let evaluationResult = {};
+let evaluationResult = {}; // { seminarId: [username, ...] }
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/api/seminars', (_req, res) => {
-  res.json({ seminars });
+app.get('/api/seminars', (_req, res) => res.json({ seminars }));
+
+app.post('/api/select', (req, res) => {
+  if (!registrationOpen) return res.status(403).json({ error: 'Registrace je uzavřena' });
+
+  const { username, priorities } = req.body || {};
+  const unameRegex = /^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/i;
+
+  if ((username + "").toLowerCase() === 'admin') return res.status(403).json({ error: 'Jméno admin je vyhrazeno pro administraci' });
+  if (!username || !unameRegex.test(username)) return res.status(400).json({ error: 'Použijte formát prijmeni.jmeno' });
+  if (!Array.isArray(priorities) || priorities.length !== 3 ||
+      new Set(priorities).size !== 3 ||
+      priorities.some(id => !seminars.some(s => s.id === id))
+  ) return res.status(400).json({ error: 'Vyberte tři různé platné semináře!' });
+
+  // Smazat starý výběr tohoto uživatele, pokud existuje
+  const idx = selections.findIndex(u => u.username === username);
+  if (idx >= 0) selections.splice(idx, 1);
+
+  // Uložit nový výběr
+  selections.push({ username, priorities, timestamp: Date.now() });
+  res.json({ ok: true, message: 'Výběr uložen.' });
 });
 
-// Získání všech přihlášek a stavu pro admina
 app.get('/api/admin/selections', (req, res) => {
-  if(req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
+  if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
   res.json({ selections, registrationOpen, evaluationResult });
 });
 
 app.post('/api/admin/evaluate', (req, res) => {
-  if(req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
+  if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
   registrationOpen = false;
-  evaluationResult = evaluateAssignments(selections, seminars);
-  res.json({ ok: true, message: 'Registrace uzavřena a přiřazeno.' });
+  evaluationResult = assignSeminars(selections, seminars);
+  res.json({ ok: true });
 });
 
-// Přihlášení a nová přihláška/úprava (username: prijmeni.jmeno)
-app.post('/api/select', (req, res) => {
-  if(!registrationOpen) return res.status(403).json({ error: 'Registrace je uzavřena' });
-  const { username, priorities } = req.body || {};
-  const unameRegex = /^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/i;
-  if((username+"").toLowerCase() === "admin") return res.status(403).json({ error: 'Admin se takto nepřihlašuje.' });
-  if(!username || !unameRegex.test(username)) return res.status(400).json({ error: 'Špatný formát uživatelského jména, použij prijmeni.jmeno' });
-
-  if(!Array.isArray(priorities) || priorities.length !== 3) return res.status(400).json({ error: 'Musíš vybrat 3 různé semináře!' });
-
-  for(let i=0; i<3; ++i){
-    if(!seminars.some(s=>s.id===priorities[i])) return res.status(400).json({ error: 'Neplatné ID semináře!' });
-    if(priorities.filter(x=>x===priorities[i]).length >1) return res.status(400).json({ error: 'Semináře se nesmí opakovat!' });
-  }
-
-  // Smazat starý výběr tohoto uživatele
-  const idx = selections.findIndex(u=>u.username===username);
-  if(idx>=0) selections.splice(idx,1);
-
-  // Zapsat nový s časem
-  selections.push({ username, priorities, timestamp: Date.now() });
-  res.json({ ok: true, message: 'Výběr uložen, děkujeme.' });
-});
-
-// Získání výsledku pro uživatele po přihlášení
-app.get('/api/result', (req,res)=>{
-  const { username } = req.query;
-  if(!username) return res.status(400).json({ error: "Chybí username" });
-  // Pokud vyhodnoceno, zjisti kam byl přiřazen
-  if(Object.keys(evaluationResult).length) {
-    const val = Object.entries(evaluationResult).find(([seminarId, users]) => users.includes(username));
-    return res.json({ seminarId: val ? Number(val[0]) : null });
-  }
-  res.json({ seminarId: null });
-});
-
-// Základní evaluace podle priorit a timestamp
-function evaluateAssignments(users, seminars){
-  const result = {};
-  seminars.forEach(s=>result[s.id]=[]);
-  const sorted = [...users].sort((a,b)=>a.timestamp-b.timestamp);
-
-  sorted.forEach(sel => {
-    for(const preferred of sel.priorities){
-      if(result[preferred].length < seminars.find(s=>s.id===preferred).capacity){
-        result[preferred].push(sel.username);
+function assignSeminars(all, seminars) {
+  const assignments = {};
+  seminars.forEach(s => assignments[s.id] = []);
+  const sorted = [...all].sort((a, b) => a.timestamp - b.timestamp);
+  sorted.forEach(({ username, priorities }) => {
+    for (const pid of priorities) {
+      if (assignments[pid].length < seminars.find(s => s.id === pid).capacity) {
+        assignments[pid].push(username);
         break;
       }
     }
   });
-  return result;
+  return assignments;
 }
 
-// Frontend fallback
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`Server běží na http://localhost:${PORT}`); });
