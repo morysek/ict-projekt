@@ -6,14 +6,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {font-family:sans-serif;background:#f4f7fa;margin:0;padding:0;}
-.main {max-width:470px;margin:40px auto 0 auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px #0002;padding:40px 26px 32px;}
+.main {max-width:600px;margin:40px auto 0 auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px #0002;padding:40px 26px 32px;}
 h1 {margin-top:0;text-align:center;}
 label {font-weight:600;}
 input, select, button {padding:10px 12px;font-size:16px; border-radius:7px; border:1px solid #ccc; outline:none;}
-input[type=text]{width:84%;}
-button{background:#1a822b;color:#fff;font-weight:600;border:none;cursor:pointer;}
+input[type=text], input[type=password]{width:84%;}
+button{background:#1a822b;color:#fff;font-weight:600;border:none;cursor:pointer;margin:4px 2px;}
 button:disabled{background:#b5cca6;cursor:not-allowed;}
-.status{min-height:22px;text-align:center;}
+button.danger{background:#c82333;}
+.status{min-height:22px;text-align:center;margin-top:8px;}
 #adminTable{width:100%;margin-top:10px;border-collapse:collapse;}
 #adminTable th,#adminTable td{border:1px solid #dadada;padding:8px;}
 #adminTable th{background:#e7f0e2;}
@@ -28,8 +29,12 @@ button:disabled{background:#b5cca6;cursor:not-allowed;}
   <h1>Výběr seminářů</h1>
 
   <div id="loginPanel" class="panel">
-    <label for="usernameIn">Přihlašovací jméno (prijmeni.jmeno):</label>
+    <label for="usernameIn">Přihlašovací jméno (prijmeni.jmeno nebo admin):</label>
     <input type="text" id="usernameIn" maxlength="40" autocomplete="off">
+    <div id="adminPasswordDiv" style="display:none;margin-top:12px;">
+      <label for="adminPasswordIn">Admin heslo:</label>
+      <input type="password" id="adminPasswordIn" maxlength="40">
+    </div>
     <button id="loginBtn">Přihlásit</button>
     <div class="status" id="statusLogin"></div>
   </div>
@@ -62,6 +67,8 @@ const loginPanel=document.getElementById('loginPanel');
 const votePanel=document.getElementById('votePanel');
 const adminPanel=document.getElementById('adminPanel');
 const usernameIn=document.getElementById('usernameIn');
+const adminPasswordDiv=document.getElementById('adminPasswordDiv');
+const adminPasswordIn=document.getElementById('adminPasswordIn');
 const loginBtn=document.getElementById('loginBtn');
 const statusLogin=document.getElementById('statusLogin');
 const voteForm=document.getElementById('voteForm');
@@ -75,14 +82,23 @@ const evaluateBtn=document.getElementById('evaluateBtn');
 const reopenRegBtn=document.getElementById('reopenRegBtn');
 const backToLoginAdminBtn=document.getElementById('backToLoginAdminBtn');
 
-let seminars=[],username="",isAdmin=false;
+let seminars=[],username="",isAdmin=false,adminSecret="";
 
-function show(panel){ for(const p of document.querySelectorAll('.panel'))p.style.display='none'; document.getElementById(panel).style.display='block'; }
+function show(panel){ 
+  for(const p of document.querySelectorAll('.panel'))p.style.display='none'; 
+  document.getElementById(panel).style.display='block'; 
+}
+
 function fillPrioritySelects(){
   [priority1,priority2,priority3].forEach((sel,ix)=>{
     sel.innerHTML='';
     const dOpt=document.createElement('option');dOpt.value='';dOpt.textContent='Vyber seminář';sel.appendChild(dOpt);
-    seminars.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=`${s.name} — ${s.lecturers.join(', ')}`;sel.appendChild(o);});
+    seminars.forEach(s=>{
+      const o=document.createElement('option');
+      o.value=s.id;
+      o.textContent=`${s.name} — ${s.lecturers.join(', ')}`;
+      sel.appendChild(o);
+    });
   });
 }
 
@@ -93,36 +109,79 @@ async function fetchSeminars(){
   fillPrioritySelects(); 
 }
 
-loginBtn.onclick=()=>{
+// Zobrazit/skrýt admin password pole
+usernameIn.addEventListener('input', ()=>{
+  if(usernameIn.value.trim().toLowerCase()==='admin'){
+    adminPasswordDiv.style.display='block';
+  } else {
+    adminPasswordDiv.style.display='none';
+  }
+});
+
+loginBtn.onclick=async ()=>{
   statusLogin.textContent='';
   let uname=(usernameIn.value||"").trim().toLowerCase();
   if(!uname)return statusLogin.textContent='Zadej uživatelské jméno!';
-  if(uname==="admin"){ isAdmin=true;loadAdminPanel();show('adminPanel');return; }
-  if(!/^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/.test(uname)){ statusLogin.textContent='Použij formát prijmeni.jmeno';return; }
+  
+  if(uname==="admin"){ 
+    const pwd = adminPasswordIn.value||"";
+    if(!pwd) { statusLogin.textContent='Zadej heslo!'; return; }
+    // Ověření hesla
+    let res = await fetch('/api/admin/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password:pwd})
+    });
+    let data = await res.json();
+    if(res.ok){
+      isAdmin=true;
+      adminSecret=data.secret;
+      await loadAdminPanel();
+      show('adminPanel');
+    } else {
+      statusLogin.textContent = data.error || 'Nesprávné heslo';
+    }
+    return;
+  }
+  
+  if(!/^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/.test(uname)){
+    statusLogin.textContent='Použij formát prijmeni.jmeno';
+    return;
+  }
   username=uname;
-  fetchSeminars();
+  await fetchSeminars();
   show('votePanel');
 };
 
 voteForm.onsubmit=async e=>{
-  e.preventDefault();statusVote.textContent='';submitVoteBtn.disabled=true;
+  e.preventDefault();
+  statusVote.textContent='';
+  submitVoteBtn.disabled=true;
   const p1=Number(priority1.value),p2=Number(priority2.value),p3=Number(priority3.value);
-  if(!p1||!p2||!p3||new Set([p1,p2,p3]).size!==3){statusVote.textContent='Vyber 3 různé semináře';submitVoteBtn.disabled=false;return;}
-  let res=await fetch('/api/select',{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,priorities:[p1,p2,p3]})});
+  if(!p1||!p2||!p3||new Set([p1,p2,p3]).size!==3){
+    statusVote.textContent='Vyber 3 různé semináře';
+    submitVoteBtn.disabled=false;
+    return;
+  }
+  let res=await fetch('/api/select',{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({username,priorities:[p1,p2,p3]})
+  });
   let data=await res.json();
   if(res.ok) { 
     statusVote.textContent="Výběr uložen."; 
-    setTimeout(()=>{show('loginPanel');usernameIn.value="";},1100); 
+    setTimeout(()=>{show('loginPanel');usernameIn.value="";adminPasswordIn.value="";},1100); 
   }
   else statusVote.textContent=data.error||'Chyba při ukládání';
   submitVoteBtn.disabled=false;
 };
 
 async function loadAdminPanel(){ 
-  let res = await fetch('/api/admin/selections?secret=adminsecret');
+  let res = await fetch('/api/admin/selections?secret='+adminSecret);
   let data=await res.json(); 
   let users=data.selections, evalRes=data.evaluationResult||{};
-  adminTable.innerHTML='<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th></tr>';
+  adminTable.innerHTML='<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th><th>Akce</th></tr>';
   users.forEach(u=>{
     let tr=adminTable.insertRow(-1);
     tr.setAttribute('data-username',u.username); 
@@ -131,7 +190,14 @@ async function loadAdminPanel(){
       let sem=seminars.find(s=>s.id===p);
       tr.insertCell().textContent=sem?sem.name:"";
     });
+    let actCell = tr.insertCell();
+    let delBtn = document.createElement('button');
+    delBtn.textContent='Smazat';
+    delBtn.className='danger';
+    delBtn.onclick=async()=>{ await deleteSelection(u.username); };
+    actCell.appendChild(delBtn);
   });
+  
   if(Object.keys(evalRes).length){
     for(let r=1;r<adminTable.rows.length;++r){
       let uname=adminTable.rows[r].getAttribute('data-username');
@@ -154,13 +220,29 @@ async function loadAdminPanel(){
   else statusAdmin.textContent=data.registrationOpen ? "Registrace otevřena." : "";
 }
 
+async function deleteSelection(uname){
+  if(!confirm('Opravdu smazat přihlášku uživatele '+uname+'?')) return;
+  let res = await fetch('/api/admin/delete?secret='+adminSecret, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:uname})
+  });
+  let data = await res.json();
+  if(res.ok) {
+    statusAdmin.textContent = data.message;
+    await loadAdminPanel();
+  } else {
+    statusAdmin.textContent = data.error || 'Chyba při mazání.';
+  }
+}
+
 evaluateBtn.onclick=async ()=>{
-  let res = await fetch('/api/admin/evaluate?secret=adminsecret', {method:"POST"}); 
+  let res = await fetch('/api/admin/evaluate?secret='+adminSecret, {method:"POST"}); 
   if(res.ok) await loadAdminPanel();
 };
 
 reopenRegBtn.onclick=async ()=>{
-  let res = await fetch('/api/admin/reopen?secret=adminsecret', {method:"POST"});
+  let res = await fetch('/api/admin/reopen?secret='+adminSecret, {method:"POST"});
   let data = await res.json();
   if(res.ok) {
     statusAdmin.textContent = data.message;
@@ -171,11 +253,15 @@ reopenRegBtn.onclick=async ()=>{
 backToLoginAdminBtn.onclick=()=>{
   username="";
   isAdmin=false;
+  adminSecret="";
   usernameIn.value="";
+  adminPasswordIn.value="";
   statusLogin.textContent="";
+  adminPasswordDiv.style.display='none';
   show('loginPanel');
 }
 
+fetchSeminars();
 show('loginPanel');
 </script>
 </body>
