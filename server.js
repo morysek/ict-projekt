@@ -17,6 +17,7 @@ const seminars = [
   { id: 11, name: "Seminář Úvod do moderní psychologie", lecturers: [], capacity: 20 }
 ];
 
+const ADMIN_PASSWORD = "milujikozeje";
 let registrationOpen = true;
 const selections = [];
 let evaluationResult = {};
@@ -24,6 +25,16 @@ let evaluationResult = {};
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/seminars', (_req, res) => res.json({ seminars }));
+
+// Ověření admin hesla
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body || {};
+  if (password === ADMIN_PASSWORD) {
+    res.json({ ok: true, secret: 'adminsecret' });
+  } else {
+    res.status(403).json({ error: 'Nesprávné heslo' });
+  }
+});
 
 app.post('/api/select', (req, res) => {
   if (!registrationOpen) return res.status(403).json({ error: 'Registrace je uzavřena' });
@@ -50,7 +61,6 @@ app.get('/api/admin/selections', (req, res) => {
   res.json({ selections, registrationOpen, evaluationResult });
 });
 
-// Uzavřít + vyhodnotit
 app.post('/api/admin/evaluate', (req, res) => {
   if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
   registrationOpen = false;
@@ -58,12 +68,24 @@ app.post('/api/admin/evaluate', (req, res) => {
   res.json({ ok: true, message: 'Registrace uzavřena a vyhodnocena.' });
 });
 
-// Otevřít registraci a zrušit vyhodnocení
 app.post('/api/admin/reopen', (req, res) => {
   if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
   registrationOpen = true;
   evaluationResult = {};
   res.json({ ok: true, message: 'Registrace znovu otevřena.' });
+});
+
+// Smazání konkrétní přihlášky
+app.post('/api/admin/delete', (req, res) => {
+  if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
+  const { username } = req.body || {};
+  const idx = selections.findIndex(u => u.username === username);
+  if (idx >= 0) {
+    selections.splice(idx, 1);
+    res.json({ ok: true, message: 'Přihláška smazána.' });
+  } else {
+    res.status(404).json({ error: 'Uživatel nenalezen.' });
+  }
 });
 
 function assignSeminars(all, seminars) {
