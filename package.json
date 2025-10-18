@@ -7,8 +7,6 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "compression": "^1.8.1",
-    "helmet": "^8.1.0"
   }
 }
 
