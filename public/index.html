@@ -14,6 +14,7 @@ input[type=text], input[type=password]{width:84%;}
 button{background:#1a822b;color:#fff;font-weight:600;border:none;cursor:pointer;margin:4px 2px;}
 button:disabled{background:#b5cca6;cursor:not-allowed;}
 button.danger{background:#c82333;}
+button.secondary{background:#6c757d;}
 .status{min-height:22px;text-align:center;margin-top:8px;}
 #adminTable{width:100%;margin-top:10px;border-collapse:collapse;}
 #adminTable th,#adminTable td{border:1px solid #dadada;padding:8px;}
@@ -22,6 +23,12 @@ button.danger{background:#c82333;}
 .row-lost{background:#ffeee6 !important;}
 .priority-label{font-weight:700;display:block;margin:12px 0 4px;}
 .panel{display:none;}
+.filter-buttons{margin:16px 0;display:flex;flex-wrap:wrap;gap:8px;}
+.filter-btn{background:#007bff;padding:8px 14px;font-size:14px;border-radius:5px;}
+.filter-btn.active{background:#0056b3;}
+.seminar-card{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0;background:#fafafa;}
+.seminar-card h4{margin:0 0 8px 0;}
+.seminar-card .category{display:inline-block;background:#e3f2fd;padding:4px 8px;border-radius:4px;font-size:13px;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -29,14 +36,30 @@ button.danger{background:#c82333;}
   <h1>Výběr seminářů</h1>
 
   <div id="loginPanel" class="panel">
-    <label for="usernameIn">Přihlašovací jméno (prijmeni.jmeno):</label>
+    <label for="usernameIn">Přihlašovací jméno (prijmeni.jmeno nebo admin):</label>
     <input type="text" id="usernameIn" maxlength="40" autocomplete="off">
     <div id="adminPasswordDiv" style="display:none;margin-top:12px;">
       <label for="adminPasswordIn">Admin heslo:</label>
       <input type="password" id="adminPasswordIn" maxlength="40">
     </div>
     <button id="loginBtn">Přihlásit</button>
+    <button id="browseSeminarsBtn" class="secondary">Prohlížet semináře</button>
     <div class="status" id="statusLogin"></div>
+  </div>
+
+  <div id="browseSeminarsPanel" class="panel">
+    <h3>Přehled všech seminářů</h3>
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-category="all">Všechny</button>
+      <button class="filter-btn" data-category="jazyky">Jazyky</button>
+      <button class="filter-btn" data-category="prirodni">Přírodní vědy</button>
+      <button class="filter-btn" data-category="humanitni">Humanitní</button>
+      <button class="filter-btn" data-category="umeni">Umění a kreativita</button>
+      <button class="filter-btn" data-category="wellness">Wellness</button>
+      <button class="filter-btn" data-category="ostatni">Ostatní</button>
+    </div>
+    <div id="seminarsList"></div>
+    <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
   </div>
   
   <div id="votePanel" class="panel">
@@ -66,10 +89,13 @@ button.danger{background:#c82333;}
 const loginPanel=document.getElementById('loginPanel');
 const votePanel=document.getElementById('votePanel');
 const adminPanel=document.getElementById('adminPanel');
+const browseSeminarsPanel=document.getElementById('browseSeminarsPanel');
 const usernameIn=document.getElementById('usernameIn');
 const adminPasswordDiv=document.getElementById('adminPasswordDiv');
 const adminPasswordIn=document.getElementById('adminPasswordIn');
 const loginBtn=document.getElementById('loginBtn');
+const browseSeminarsBtn=document.getElementById('browseSeminarsBtn');
+const backToLoginFromBrowse=document.getElementById('backToLoginFromBrowse');
 const statusLogin=document.getElementById('statusLogin');
 const voteForm=document.getElementById('voteForm');
 const statusVote=document.getElementById('statusVote');
@@ -81,8 +107,20 @@ const adminTable=document.getElementById('adminTable');
 const evaluateBtn=document.getElementById('evaluateBtn');
 const reopenRegBtn=document.getElementById('reopenRegBtn');
 const backToLoginAdminBtn=document.getElementById('backToLoginAdminBtn');
+const seminarsList=document.getElementById('seminarsList');
 
 let seminars=[],username="",isAdmin=false,adminSecret="";
+
+const categories = {
+  1: 'ostatni', 2: 'prirodni', 3: 'humanitni', 4: 'humanitni',
+  5: 'umeni', 6: 'ostatni', 7: 'umeni', 8: 'wellness',
+  9: 'prirodni', 10: 'jazyky', 11: 'humanitni'
+};
+
+const categoryNames = {
+  'jazyky': 'Jazyky', 'prirodni': 'Přírodní vědy', 'humanitni': 'Humanitní',
+  'umeni': 'Umění a kreativita', 'wellness': 'Wellness', 'ostatni': 'Ostatní'
+};
 
 function show(panel){ 
   for(const p of document.querySelectorAll('.panel'))p.style.display='none'; 
@@ -109,7 +147,41 @@ async function fetchSeminars(){
   fillPrioritySelects(); 
 }
 
-// Zobrazit/skrýt admin password pole
+function displaySeminars(filter='all'){
+  seminarsList.innerHTML='';
+  const filtered = filter==='all' ? seminars : seminars.filter(s=>categories[s.id]===filter);
+  filtered.forEach(s=>{
+    const card = document.createElement('div');
+    card.className='seminar-card';
+    const catName = categoryNames[categories[s.id]] || 'Ostatní';
+    card.innerHTML=`
+      <h4>${s.name}</h4>
+      <div>Vyučující: ${s.lecturers.join(', ') || 'neuvedeno'}</div>
+      <div>Kapacita: ${s.capacity} míst</div>
+      <span class="category">${catName}</span>
+    `;
+    seminarsList.appendChild(card);
+  });
+}
+
+browseSeminarsBtn.onclick=async ()=>{
+  await fetchSeminars();
+  displaySeminars('all');
+  show('browseSeminarsPanel');
+};
+
+backToLoginFromBrowse.onclick=()=>{
+  show('loginPanel');
+};
+
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    displaySeminars(btn.dataset.category);
+  };
+});
+
 usernameIn.addEventListener('input', ()=>{
   if(usernameIn.value.trim().toLowerCase()==='admin'){
     adminPasswordDiv.style.display='block';
@@ -126,7 +198,6 @@ loginBtn.onclick=async ()=>{
   if(uname==="admin"){ 
     const pwd = adminPasswordIn.value||"";
     if(!pwd) { statusLogin.textContent='Zadej heslo!'; return; }
-    // Ověření hesla
     let res = await fetch('/api/admin/login', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -144,10 +215,6 @@ loginBtn.onclick=async ()=>{
     return;
   }
   
-  if(!/^[a-záčďéěíňóřšťúůýž]+\.[a-záčďéěíňóřšťúůýž]+$/.test(uname)){
-    statusLogin.textContent='Použij formát prijmeni.jmeno';
-    return;
-  }
   username=uname;
   await fetchSeminars();
   show('votePanel');
