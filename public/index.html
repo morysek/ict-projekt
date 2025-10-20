@@ -1,240 +1,282 @@
 <!doctype html>
 <html lang="cs">
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Výběr seminářů</title>
-  <!-- Inter latin-ext pro češtinu -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap&subset=latin-ext" rel="stylesheet">
-  <style>
-    html,body{height:100%;margin:0;padding:0; box-sizing:border-box;}
-    body {
-      min-height: 100vh;
-      font-family: "Inter", system-ui, Arial, sans-serif;
-      color:#15192a;
-      /* Liquid blured background - přiložený obrázek, fallback slabě fialový gradient */
-      background:
-        url('./2d2bba13cc75b9700ec6c7a16dbf1a37.jpg') no-repeat center center fixed,
-        linear-gradient(117deg, #c7cce7 0%, #e5edfa 57%, #f5f8ff 100%);
-      background-size: cover, cover;
-      overflow-x:hidden;
-    }
-    .glass-main {
-      position:relative;
-      max-width:1024px;
-      margin: 52px auto 56px;
-      padding: 0 3vw 24px 3vw;
-      z-index:2;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-    }
-    /* Dekorativní mřížka + liquid circles */
-    .glass-bg-deco {
-      pointer-events: none;
-      position:fixed;
-      z-index:0;
-      left:0; top:0; width:100vw; height:100vh;
-      background:
-        repeating-linear-gradient(0deg,#eef0f8 0 1px,transparent 1px 78px),
-        repeating-linear-gradient(90deg,#eef0f8 0 1px,transparent 1px 78px);
-      opacity:.18;
-      mix-blend-mode: lighten;
-      will-change:opacity;
-      animation: gridFade 6s alternate infinite;
-    }
-    @keyframes gridFade { 0%{ opacity:.17; } 100%{ opacity:.25; }}
-    .bubble{
-      position:fixed;
-      border-radius: 3000px;
-      pointer-events: none;
-      opacity: 0.28;
-      z-index:0;
-      filter: blur(2.5px) saturate(155%);
-      transition:.44s opacity;
-      background: linear-gradient(135deg,#f9faff 43%,#e7ebfb 55%,#c2e9fb 100%);
-    }
-    .bubble1{ width:430px; height:270px; left:5vw; top:13vh;}
-    .bubble2{ width:185px; height:123px; left:64vw; top:9vh; opacity:.18;}
-    .bubble3{ width:210px; height:170px; left:17vw; top:66vh;}
-    .bubble4{ width:280px; height:160px; left:55vw; top:62vh;}
-    .bubble5{ width:165px; height:165px; left:9vw; top:77vh;opacity:.13;}
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Výběr seminářů</title>
+<!-- Helvetica Neue/Helvetica system stack for true poster feel -->
+<style>
+html, body {
+  height: 100%;
+}
 
-    .glass-card {
-      position: relative;
-      margin: 22px 0 0 0;
-      width: 100%;
-      max-width: 620px;
-      border-radius: 34px;
-      background:rgba(255,255,255,0.40);
-      box-shadow: 0 16px 64px #b8d8ff42, 0 1.5px 9px #b5cfff17;
-      border:1.7px solid #e7eafd90;
-      -webkit-backdrop-filter: blur(22px) saturate(145%);
-      backdrop-filter: blur(22px) saturate(145%);
-      animation: fadeGlass 1.3s cubic-bezier(.24,.6,.35,.96);
-      overflow:hidden;
-    }
-    @keyframes fadeGlass { from {opacity:0;transform:translateY(22px) scale(.95);} to {opacity:1;transform:none;} }
-    .glass-card-header {
-      font-weight:700; font-size:2.1rem;
-      text-align:center; color:#171a22;
-      padding: 30px 9vw 8px 9vw; letter-spacing:-0.6px;
-      text-shadow:0 12px 44px #fff8;
-      background:rgba(255,255,255,0.05);
-    }
-    .glass-content {padding: 30px 8vw 36px 8vw;}
-    label {font-weight:600; color: #263257; margin:14px 0 8px 4px;display:block;}
-    input,select,button {
-      font-family: inherit; font-size:1.08rem;
-      border-radius: 13px;
-      border:1px solid #dbeafe;
-      outline:none; background: rgba(255,255,255,0.80);
-      box-shadow: 0 2.5px 14px #e5eaff25 inset;
-      margin-bottom: 13px; padding:13px;
-      width:100%;
-      transition: border .14s, background .13s, box-shadow .18s;
-    }
-    input:focus, select:focus {
-      border-color: #86b3fa;
-      background:rgba(255,255,255,0.95);
-      box-shadow: 0 0 0 3px #bbd5ff66;
-    }
-    .row {display:flex; gap:15px; flex-wrap:wrap; margin-bottom:10px;}
-    button {
-      padding:13px 32px; border-radius:16px; font-weight:700;
-      border:none;
-      cursor:pointer;
-      color:#193971;
-      background: linear-gradient(95deg,#ace9fe 0,#e0ebff 64%,#deebff 100%);
-      box-shadow:0 4px 18px #b9d2fc24;
-      transition:.12s;
-      margin-bottom:0;
-    }
-    button.secondary {
-      background:linear-gradient(93deg,#f2f6fb 0,#f7fcff 100%);
-      color:#41506b; font-weight:600;
-    }
-    button.danger{
-      background:linear-gradient(90deg,#fa7e7e 15%,#ffe4da 100%);
-      color:#fff; font-weight:700;
-    }
-    button:active{transform: translateY(1.5px);}
-    button:disabled{background:#e3e7ef;color:#888;cursor:not-allowed;}
-    .status {
-      min-height: 23px; text-align:center; margin:13px 0 0 0; background:rgba(203,221,255,.09); border-radius:12px;font-size:1.07em;
-      box-shadow:0 2px 9px #d3e1fc23 inset;
-      color:#263254;
-    }
-    hr.slab {border:none;height:1px;background: linear-gradient(90deg,transparent,#c6d6f4,transparent);margin:16px 0;}
-    /* Liquid Table */
-    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:18px;}
-    th,td{border:1px solid #eaeaef88;padding:10px 13px;background:rgba(248,251,255,.90);}
-    th{background:#f1f6ff;}
-    .row-won{background:#e0ffe8 !important;}
-    .row-lost{background:#fff3e5 !important;}
-    .filters{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:16px 0;}
-    .filter-btn{background:rgba(212,239,255,0.62);padding:12px 22px;border-radius:18px;border:1px solid #a8d5fd;font-weight:600;color:#2255af;cursor:pointer;}
-    .filter-btn.active{background:#d1eafe;color:#124473;}
-    .seminar-card{border:1.1px solid #d7e5fe;border-radius:20px;box-shadow:0 2px 15px #bddbff1a;padding:20px 16px;background:rgba(255,255,255,.83);}
-    .seminar-card h4{margin:0 0 6px;}
-    .category{display:inline-block;background:#e3f2fd;color:#2b3658;padding:7px 22px;margin-top:8px;border-radius:8px;font-size:.98em;}
-    .panel{display:none;}
-    .panel.show{display:block;}
-    @media (max-width:860px){
-      .glass-main{ padding:0 4vw 24px 4vw;}
-      .glass-card{max-width: 99vw;}
-      .glass-content{padding: 20px 3vw 21px 3vw;}
-      .grid.grid-2{grid-template-columns:1fr}
-    }
-  </style>
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: #fafbfc;
+  color: #151616;
+  font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif;
+  letter-spacing: -.01em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.helveticagrid {
+  max-width: 730px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 0 1em 40px 1em;
+  display: flex;
+  flex-direction: column;
+}
+
+.helveticagrid::before {
+  content: "";
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background-image:
+    linear-gradient(0deg, #ededed22 1px, transparent 1px),
+    linear-gradient(90deg, #ededed22 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.helveticatitle {
+  font-size: 2.9rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.03em;
+  margin: 60px 0 16px 0;
+  z-index: 1;
+}
+
+.helveticasub {
+  font-size: 1.18rem;
+  margin-bottom: 36px;
+  color: #26262699;
+  font-weight: 400;
+  z-index: 1;
+}
+
+.helveticacard {
+  background: #fff;
+  border: none;
+  margin: 0 0 28px 0;
+  padding: 0;
+  box-shadow: none;
+  border-radius: 0;
+  z-index: 1;
+  max-width: 730px;
+}
+
+label, h3 {
+  font-size: 1.04rem;
+  letter-spacing: -.01em;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  display: block;
+}
+
+input, select, button {
+  font-family: inherit;
+  font-size: 1.09rem;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin-bottom: 1.3em;
+  padding: 0.85em 0.9em;
+  border: 1.2px solid #eee;
+  border-radius: 0;
+  outline: none;
+  background: #fff;
+  color: #1b2329;
+  transition: border .15s;
+}
+input:focus, select:focus {
+  border-color: #181818;
+}
+button {
+  background: #151616;
+  color: #fff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 0.93em 0.9em;
+  margin-bottom: 0;
+  cursor: pointer;
+  border: none;
+}
+button.secondary {
+  background: #ffffff;
+  color: #151616;
+  border: 1.3px solid #222;
+}
+button.danger {
+  background: #e00;
+  color: #fff;
+}
+button:disabled{
+  background: #e7e7e7 !important; color: #888 !important; cursor: not-allowed;
+}
+.status {
+  font-size: 1.08em;
+  margin: 0.6em 0;
+  min-height: 22px;
+  color: #444;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  background: #fff;
+  font-size: 1em;
+  border-radius: 0;
+}
+th, td {
+  border-top: 1.2px solid #ebebeb;
+  text-align: left;
+  padding: 0.75em 0.5em;
+}
+th {
+  font-weight: 700;
+  background: #f5f5f5;
+}
+.row-won {
+  background: #e7ffe7 !important;
+}
+.row-lost {
+  background: #fff9ed !important;
+}
+.panel { display: none; }
+.panel.show { display: block; }
+
+.filters, .row {
+  display: flex; gap: 9px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 12px;
+}
+.filter-btn {
+  background: #fff;
+  color: #181818;
+  border: 1.1px solid #222;
+  font-weight: 600;
+  padding: 0.7em 1.6em;
+  border-radius: 0;
+  font-size: 0.95em;
+  letter-spacing: .01em;
+}
+.filter-btn.active {
+  background: #000;
+  color: #fff;
+}
+.seminar-card {
+  background: #f8f8f8;
+  box-shadow: none;
+  border: 1.2px solid #ebebeb;
+  border-radius: 0;
+  margin-bottom: 17px;
+  padding: 20px 16px;
+}
+.seminar-card h4 {
+  font-size: 1.1em;
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+.category {
+  display: inline-block;
+  background: #ededed;
+  color: #242424;
+  margin-top: 7px;
+  font-size: .96em;
+  border-radius: 0;
+  padding: 0.39em 1.1em;
+  letter-spacing: .02em;
+}
+.priority-label { margin-top:1.1em }
+
+@media (max-width: 800px) {
+  .helveticagrid {max-width:99vw;}
+  .helveticacard {max-width:99vw;}
+}
+</style>
 </head>
 <body>
-  <!-- Inspirativní grid a liquid background -->
-  <div class="glass-bg-deco"></div>
-  <div class="bubble bubble1"></div>
-  <div class="bubble bubble2"></div>
-  <div class="bubble bubble3"></div>
-  <div class="bubble bubble4"></div>
-  <div class="bubble bubble5"></div>
+<div class="helveticagrid">
 
-  <div class="glass-main">
+  <div class="helveticatitle">Výběr seminářů</div>
+  <div class="helveticasub">Přihlaste se. Vyberte si. Odevzdejte. Skvělý systém inspirovaný švýcarskou typografií.</div>
 
-    <!-- LOGIN PANEL -->
-    <div id="loginPanel" class="glass-card panel show">
-      <div class="glass-card-header">Výběr seminářů</div>
-      <div class="glass-content">
-        <label for="usernameIn">Přihlašovací jméno (příjmení.jméno nebo admin)</label>
-        <input id="usernameIn" type="text" maxlength="40" autocomplete="off" placeholder="např. kozisek.adam">
-        <div id="adminPasswordDiv" style="display:none; margin-top:8px;">
-          <label for="adminPasswordIn">Admin heslo</label>
-          <input id="adminPasswordIn" type="password" maxlength="40" placeholder="••••••••">
-        </div>
-        <div class="row">
-          <button id="loginBtn">Přihlásit</button>
-          <button id="browseSeminarsBtn" class="secondary">Prohlížet semináře</button>
-        </div>
-        <div class="status" id="statusLogin"></div>
-      </div>
+  <!-- Login -->
+  <section id="loginPanel" class="helveticacard panel show">
+    <label for="usernameIn">Přihlašovací jméno (příjmení.jméno nebo admin)</label>
+    <input id="usernameIn" type="text" maxlength="40" autocomplete="off" placeholder="např. kozisek.adam">
+    <div id="adminPasswordDiv" style="display:none;">
+      <label for="adminPasswordIn">Admin heslo</label>
+      <input id="adminPasswordIn" type="password" maxlength="40" placeholder="••••••••">
     </div>
-
-    <!-- BROWSE SEMINARS PANEL -->
-    <div id="browseSeminarsPanel" class="glass-card panel">
-      <div class="glass-card-header">Přehled všech seminářů</div>
-      <div class="glass-content">
-        <div class="filters">
-          <button class="filter-btn active" data-category="all">Všechny</button>
-          <button class="filter-btn" data-category="jazyky">Jazyky</button>
-          <button class="filter-btn" data-category="prirodni">Přírodní vědy</button>
-          <button class="filter-btn" data-category="humanitni">Humanitní</button>
-          <button class="filter-btn" data-category="umeni">Umění a kreativita</button>
-          <button class="filter-btn" data-category="wellness">Wellness</button>
-          <button class="filter-btn" data-category="ostatni">Ostatní</button>
-        </div>
-        <div id="seminarsList" class="grid grid-2"></div>
-        <div class="row">
-          <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
-        </div>
-      </div>
+    <div class="row">
+      <button id="loginBtn">Přihlásit</button>
+      <button id="browseSeminarsBtn" class="secondary">Prohlížet semináře</button>
     </div>
+    <div class="status" id="statusLogin"></div>
+  </section>
 
-    <!-- VOTE PANEL -->
-    <div id="votePanel" class="glass-card panel">
-      <div class="glass-card-header">Vyber své tři priority</div>
-      <div class="glass-content">
-        <form id="voteForm">
-          <label class="priority-label">1. priorita</label>
-          <select id="priority1"></select>
-          <label class="priority-label">2. priorita</label>
-          <select id="priority2"></select>
-          <label class="priority-label">3. priorita</label>
-          <select id="priority3"></select>
-          <div class="row">
-            <button id="submitVoteBtn" type="submit">Odeslat priority</button>
-          </div>
-          <div class="status" id="statusVote"></div>
-        </form>
-      </div>
+  <!-- Katalog -->
+  <section id="browseSeminarsPanel" class="helveticacard panel">
+    <h3>Přehled všech seminářů</h3>
+    <div class="filters">
+      <button class="filter-btn active" data-category="all">Všechny</button>
+      <button class="filter-btn" data-category="jazyky">Jazyky</button>
+      <button class="filter-btn" data-category="prirodni">Přírodní vědy</button>
+      <button class="filter-btn" data-category="humanitni">Humanitní</button>
+      <button class="filter-btn" data-category="umeni">Umění a kreativita</button>
+      <button class="filter-btn" data-category="wellness">Wellness</button>
+      <button class="filter-btn" data-category="ostatni">Ostatní</button>
     </div>
+    <div id="seminarsList" style="width:100%"></div>
+    <div class="row">
+      <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
+    </div>
+  </section>
 
-    <!-- ADMIN PANEL -->
-    <div id="adminPanel" class="glass-card panel">
-      <div class="glass-card-header">Admin: přihlášky a výsledky</div>
-      <div class="glass-content">
-        <div class="row">
-          <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
-          <button id="reopenRegBtn" class="secondary">Otevřít registraci znovu</button>
-        </div>
-        <hr class="slab">
-        <table id="adminTable"></table>
-        <div class="row" style="margin-top:10px;"><button id="backToLoginAdminBtn" class="secondary">Odhlásit a přihlásit jiného</button></div>
-        <div class="status" id="statusAdmin"></div>
+  <!-- Volby -->
+  <section id="votePanel" class="helveticacard panel">
+    <h3>Vyber své tři priority</h3>
+    <form id="voteForm">
+      <label class="priority-label">1. priorita</label>
+      <select id="priority1"></select>
+      <label class="priority-label">2. priorita</label>
+      <select id="priority2"></select>
+      <label class="priority-label">3. priorita</label>
+      <select id="priority3"></select>
+      <div class="row">
+        <button id="submitVoteBtn" type="submit">Odeslat priority</button>
       </div>
+      <div class="status" id="statusVote"></div>
+    </form>
+  </section>
+
+  <!-- Admin -->
+  <section id="adminPanel" class="helveticacard panel">
+    <h3>Admin: přihlášky a výsledky</h3>
+    <div class="row">
+      <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
+      <button id="reopenRegBtn" class="secondary">Otevřít registraci znovu</button>
     </div>
-  </div>
-  <script>
-    // (vlož nezměněný JS z původního index.html s podporou všech panelů)
-    // stačí pouze zachovat referenční ID! Kopíruj např. z předchozí mé odpovědi
-  </script>
+    <table id="adminTable"></table>
+    <div class="row" style="margin-top:10px;">
+      <button id="backToLoginAdminBtn" class="secondary">Odhlásit a přihlásit jiného</button>
+    </div>
+    <div class="status" id="statusAdmin"></div>
+  </section>
+
+</div>
+<script>
+// (Sem vlož svůj původní JavaScript)
+// Nemusíš měnit žádná ID – vše funguje dál jako v původním zadání.
+</script>
 </body>
 </html>
