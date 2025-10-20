@@ -2,213 +2,58 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Výběr seminářů</title>
-<!-- Helvetica Neue/Helvetica system stack for true poster feel -->
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
-html, body {
-  height: 100%;
-}
-
 body {
-  min-height: 100vh;
-  margin: 0;
   background: #fafbfc;
   color: #151616;
   font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", "DejaVu Sans", sans-serif;
-  letter-spacing: -.01em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin: 0; padding: 0;
 }
-
-.helveticagrid {
-  max-width: 730px;
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 0 1em 40px 1em;
-  display: flex;
-  flex-direction: column;
-}
-
-.helveticagrid::before {
-  content: "";
-  position: fixed;
-  left: 0; top: 0; width: 100vw; height: 100vh;
-  background-image:
-    linear-gradient(0deg, #ededed22 1px, transparent 1px),
-    linear-gradient(90deg, #ededed22 1px, transparent 1px);
-  background-size: 64px 64px, 64px 64px;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.helveticatitle {
-  font-size: 2.9rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -.03em;
-  margin: 60px 0 16px 0;
-  z-index: 1;
-}
-
-.helveticasub {
-  font-size: 1.18rem;
-  margin-bottom: 36px;
-  color: #26262699;
-  font-weight: 400;
-  z-index: 1;
-}
-
-.helveticacard {
-  background: #fff;
-  border: none;
-  margin: 0 0 28px 0;
-  padding: 0;
-  box-shadow: none;
-  border-radius: 0;
-  z-index: 1;
-  max-width: 730px;
-}
-
-label, h3 {
-  font-size: 1.04rem;
-  letter-spacing: -.01em;
-  font-weight: 600;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  display: block;
-}
-
+.helveticagrid { max-width: 730px; margin: 0 auto; padding: 0 1em 40px 1em; min-height: 100vh; }
+.helveticatitle { font-size: 2.6rem; font-weight: 700; margin: 60px 0 16px 0; }
+.helveticasub { font-size: 1.18rem; margin-bottom: 36px; color: #26262699; font-weight:400; }
+.helveticacard { background: #fff; border: none; margin: 0 0 28px 0; padding: 0; box-shadow: none; max-width: 730px;}
+label, h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; display:block;}
 input, select, button {
-  font-family: inherit;
-  font-size: 1.09rem;
-  box-sizing: border-box;
-  display: block;
-  width: 100%;
-  margin-bottom: 1.3em;
-  padding: 0.85em 0.9em;
-  border: 1.2px solid #eee;
-  border-radius: 0;
-  outline: none;
-  background: #fff;
-  color: #1b2329;
+  font-family: inherit; font-size: 1.09rem; box-sizing: border-box; display: block;
+  width: 100%; margin-bottom: 1.3em; padding: 0.85em 0.9em; border: 1.2px solid #eee; border-radius: 0;
+  outline: none; background: #fff; color: #1b2329;
   transition: border .15s;
 }
-input:focus, select:focus {
-  border-color: #181818;
-}
+input:focus, select:focus { border-color: #181818; }
 button {
-  background: #151616;
-  color: #fff;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  padding: 0.93em 0.9em;
-  margin-bottom: 0;
-  cursor: pointer;
-  border: none;
+  background: #151616; color: #fff; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; padding: 0.93em 0.9em; margin-bottom: 0; cursor: pointer; border: none;
 }
-button.secondary {
-  background: #ffffff;
-  color: #151616;
-  border: 1.3px solid #222;
-}
-button.danger {
-  background: #e00;
-  color: #fff;
-}
-button:disabled{
-  background: #e7e7e7 !important; color: #888 !important; cursor: not-allowed;
-}
-.status {
-  font-size: 1.08em;
-  margin: 0.6em 0;
-  min-height: 22px;
-  color: #444;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1em 0;
-  background: #fff;
-  font-size: 1em;
-  border-radius: 0;
-}
-th, td {
-  border-top: 1.2px solid #ebebeb;
-  text-align: left;
-  padding: 0.75em 0.5em;
-}
-th {
-  font-weight: 700;
-  background: #f5f5f5;
-}
-.row-won {
-  background: #e7ffe7 !important;
-}
-.row-lost {
-  background: #fff9ed !important;
-}
+button.secondary { background: #fff; color: #151616; border: 1.2px solid #222; }
+button.danger { background: #e00; color: #fff; }
+button:disabled{ background: #e7e7e7 !important; color: #888 !important; cursor: not-allowed; }
+.status { font-size: 1.08em; margin: 0.6em 0; min-height: 22px; color: #444; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; background: #fff; font-size: 1em;}
+th, td { border-top: 1.2px solid #ebebeb; text-align: left; padding: 0.75em 0.5em;}
+th { font-weight: 700; background: #f5f5f5;}
+.row-won { background: #e7ffe7 !important; }
+.row-lost { background: #fff9ed !important; }
 .panel { display: none; }
 .panel.show { display: block; }
-
 .filters, .row {
-  display: flex; gap: 9px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 12px;
+  display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 12px;
 }
-.filter-btn {
-  background: #fff;
-  color: #181818;
-  border: 1.1px solid #222;
-  font-weight: 600;
-  padding: 0.7em 1.6em;
-  border-radius: 0;
-  font-size: 0.95em;
-  letter-spacing: .01em;
-}
-.filter-btn.active {
-  background: #000;
-  color: #fff;
-}
-.seminar-card {
-  background: #f8f8f8;
-  box-shadow: none;
-  border: 1.2px solid #ebebeb;
-  border-radius: 0;
-  margin-bottom: 17px;
-  padding: 20px 16px;
-}
-.seminar-card h4 {
-  font-size: 1.1em;
-  margin: 0 0 4px 0;
-  font-weight: 700;
-}
-.category {
-  display: inline-block;
-  background: #ededed;
-  color: #242424;
-  margin-top: 7px;
-  font-size: .96em;
-  border-radius: 0;
-  padding: 0.39em 1.1em;
-  letter-spacing: .02em;
-}
+.filter-btn { background: #fff; color: #181818; border: 1.1px solid #222; font-weight: 600; padding: 0.7em 1.6em;}
+.filter-btn.active { background: #000; color: #fff;}
+.seminar-card{ background: #f8f8f8; border: 1.2px solid #ebebeb; border-radius: 0; margin-bottom: 17px; padding: 20px 16px;}
+.seminar-card h4 { font-size: 1.1em; margin: 0 0 4px 0; font-weight: 700;}
+.category { display: inline-block; background: #ededed; color: #242424; margin-top: 7px; font-size: .96em; border-radius: 0; padding: 0.39em 1.1em;}
 .priority-label { margin-top:1.1em }
-
-@media (max-width: 800px) {
-  .helveticagrid {max-width:99vw;}
-  .helveticacard {max-width:99vw;}
-}
+@media (max-width: 800px) { .helveticagrid {max-width:99vw;} .helveticacard {max-width:99vw;} }
 </style>
 </head>
 <body>
 <div class="helveticagrid">
-
   <div class="helveticatitle">Výběr seminářů</div>
   <div class="helveticasub">Přihlaste se. Vyberte si. Odevzdejte. Skvělý systém inspirovaný švýcarskou typografií.</div>
-
   <!-- Login -->
   <section id="loginPanel" class="helveticacard panel show">
     <label for="usernameIn">Přihlašovací jméno (příjmení.jméno nebo admin)</label>
@@ -223,7 +68,6 @@ th {
     </div>
     <div class="status" id="statusLogin"></div>
   </section>
-
   <!-- Katalog -->
   <section id="browseSeminarsPanel" class="helveticacard panel">
     <h3>Přehled všech seminářů</h3>
@@ -241,7 +85,6 @@ th {
       <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
     </div>
   </section>
-
   <!-- Volby -->
   <section id="votePanel" class="helveticacard panel">
     <h3>Vyber své tři priority</h3>
@@ -258,7 +101,6 @@ th {
       <div class="status" id="statusVote"></div>
     </form>
   </section>
-
   <!-- Admin -->
   <section id="adminPanel" class="helveticacard panel">
     <h3>Admin: přihlášky a výsledky</h3>
@@ -272,11 +114,9 @@ th {
     </div>
     <div class="status" id="statusAdmin"></div>
   </section>
-
 </div>
 <script>
-// (Sem vlož svůj původní JavaScript)
-// Nemusíš měnit žádná ID – vše funguje dál jako v původním zadání.
+// Sem vlož svůj funkční JS dle předešlých odpovědí nebo použij kód, kde jsou správné IDs a fetch.
 </script>
 </body>
 </html>
