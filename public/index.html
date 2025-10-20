@@ -6,209 +6,473 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-html, body {
-  min-height: 100vh;
+/* ---------- Liquid Glass / Apple Glassmorphism Shell ---------- */
+:root{
+  --bg-1:#ecf3ff;
+  --bg-2:#d7e7ff;
+  --bg-3:#cbe0ff;
+  --ink:#1b263b;
+  --ink-2:#2b3658;
+  --ink-dim:#44506b;
+  --glass:#ffffff68;
+  --glass-strong:#ffffffa6;
+  --stroke:#dbeafe9a;
+  --stroke-strong:#c7dcff;
+  --accent:#90caf9;
+  --accent-2:#a5d8f8;
+  --danger-1:#ef5e5e;
+  --danger-2:#ffbb9e;
+  --ok-1:#27ae60;
+  --warn:#ffce7a;
 }
-body {
-  background: radial-gradient(ellipse at 40% 20%, #51b2fc70 0%, #e5ecfa70 16%, #e0c3fc55 40%, #f4f7fa 100%);
-  min-height: 100vh;
-  margin: 0; padding: 0;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0; padding:0;
+  font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 800px at 20% -10%, #ffffff 0%, transparent 60%),
+    radial-gradient(1200px 900px at 120% 10%, #e9f1ff 0%, transparent 60%),
+    linear-gradient(120deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
 }
-::selection {background: #e7f6ff;}
-.glass-main {
-  max-width: 640px;
-  margin: 60px auto;
-  padding: 38px 30px 36px 30px;
-  border-radius: 32px;
-  box-shadow: 0 30px 60px #80b4e250, 0 2px 10px #30306018;
-  background: rgba(255, 255, 255, 0.30);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
-  border: 1.2px solid #dbeafe70;
-  animation: fadeIn 1.2s cubic-bezier(.25,.46,.45,.94);
+.container{
+  max-width: 920px;
+  margin: 52px auto;
+  padding: 0 22px 40px 22px;
 }
-@keyframes fadeIn { from {opacity:0; transform:scale(.98);} to {opacity:1;}}
-h1 {
-  font-size: 2.3rem;
-  font-family: 'Inter', Arial, sans-serif;
-  letter-spacing: -1px;
-  margin: 0 0 20px 0;
+.header{
+  text-align:center;
+  margin-bottom: 20px;
+}
+.header h1{
+  margin: 0 0 6px 0;
+  font-size: 2.35rem;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  text-shadow: 0 8px 48px #ffffff6c;
   font-weight: 700;
-  color: #1b263b;
-  text-align:center;
-  text-shadow: 0 2px 24px #ffffff50;
 }
-h3 {
-  margin-top: 10px;
-  color: #2b3658; font-weight: 600;
-  text-align:center;
+.subtle{color: var(--ink-2); opacity:.9}
+
+.glass{
+  background: var(--glass);
+  border: 1.2px solid var(--stroke);
+  border-radius: 28px;
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  backdrop-filter: blur(16px) saturate(145%);
+  box-shadow: 0 30px 60px #80b4e22c, 0 3px 10px #30306018;
 }
-label {
-  font-weight: 600; color: #2b3658;
-  display:block; margin-bottom:7px;
+.section{
+  padding: 22px 22px;
+  margin: 18px 0;
 }
-input, select, button {
-  font-family: inherit;
-  padding: 12px 14px 11px 13px;
-  font-size: 1.08rem;
-  border-radius: 11px;
-  border: 1px solid #d1d8ee;
-  outline:none;
-  margin-bottom: 10px;
-  background: rgba(255,255,255,0.65);
+.grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media(min-width:820px){
+  .grid{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.card{
+  padding: 18px 18px 16px 18px;
+  transition: background .2s, box-shadow .2s, transform .2s;
+}
+.card:hover{
+  background: var(--glass-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px #a8cfff2a, 0 0 0 1px #e7f1ff inset;
+}
+
+/* ---------- Controls ---------- */
+label{font-weight:600; color:var(--ink-2); display:block; margin:10px 0 6px;}
+.row{display:flex; gap:12px; flex-wrap:wrap}
+input,select,button{
+  font: inherit; line-height: 1.1;
+  border-radius: 12px; border:1px solid var(--stroke-strong);
+  padding: 12px 14px; outline:none;
+  background: rgba(255,255,255,.82);
   box-shadow: 0 2.5px 14px #e5eaff25 inset;
-  transition: box-shadow .18s, border .16s;
+  transition: border .15s, box-shadow .15s, transform .05s;
 }
-input[type=text], input[type=password] {
-  width: 100%;
-  font-size: 1.13rem;
+input:focus,select:focus{border-color: var(--accent); box-shadow: 0 0 0 3px #90caf93a}
+select{width:100%}
+input[type=text],input[type=password]{width:100%}
+button{
+  background: linear-gradient(90deg, var(--accent) 40%, var(--accent-2) 90%);
+  color:#1c385c; font-weight:700; border:none; cursor:pointer;
+  box-shadow: 0 6px 18px #a7d8ff44;
 }
-input:focus, select:focus {
-  border-color: #90caf9;
-  background:rgba(255,255,255,0.86);
+button.secondary{
+  background: linear-gradient(90deg, #e8edf7 20%, #f7fbff 95%);
+  color:#41506b; font-weight:600;
 }
-button {
-  background: linear-gradient(90deg,#90caf9 45%,#a5d8f8 85%);
-  color: #224;
-  font-weight: 700;
-  letter-spacing: .033em;
-  border: none;
-  cursor: pointer;
-  margin: 7px 7px 7px 0;
-  box-shadow: 0 5px 14px #b5e5ff17;
-  transition:.17s;
-}
-button.secondary {
-  background: linear-gradient(90deg,#e3e3ec 30%,#f0f6ff 85%);
-  color: #41506b;
-  font-weight: 600;
-  margin-left:6px;
-}
-button.danger {
-  background:linear-gradient(90deg,#ef5e5e 35%,#ffbb9e 95%);
+button.danger{
+  background: linear-gradient(90deg, var(--danger-1) 25%, var(--danger-2) 100%);
   color:#fff; font-weight:700;
 }
-button:disabled{background:#e3e7ef;color:#888;cursor:not-allowed;}
-.status {
-  min-height: 22px; text-align:center; margin-top: 7px; font-size: 1.06em;
-  background: rgba(208, 238, 255, 0.11);
-  border-radius: 10px;
+button:active{transform: translateY(1px)}
+button:disabled{background:#e8edf7; color:#90a0b5; cursor:not-allowed}
+
+/* ---------- Status & table ---------- */
+.status{
+  min-height: 22px; text-align:center; margin-top: 8px; padding: 8px 10px;
+  background: rgba(200,220,250,.12); border-radius: 10px; color:#29486a;
 }
-.panel {display:none;}
-.glass-card,.seminar-card {
-  border-radius: 19px;
-  background: rgba(255,255,255,0.48);
-  border:1px solid #d7e5fee8;
-  box-shadow: 0 7px 18px #40406011 inset;
-  margin: 12px 0;
-  padding: 15px 19px;
-  transition:.18s;
+.table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:14px}
+.table th,.table td{
+  border:1px solid #deecff72; padding:10px 12px; background:rgba(248,251,255,.75)
 }
-.glass-card:hover,.seminar-card:hover{
-  box-shadow: 0 14px 35px #abdeff1e inset,0 0px 24px #ffffff13;
-  background: rgba(252,252,255,0.67);
+.table th{background:#f1f6ff}
+.row-won{background:#e5ffe9 !important}
+.row-lost{background:#fff2dd !important}
+
+/* ---------- Filters & cards ---------- */
+.filters{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin: 12px 0 6px}
+.filter-btn{
+  background:rgba(212,239,255,.58);
+  padding:9px 16px; border-radius: 9px; border:1px solid #a8d5fd;
+  font-weight:600; color:#245486; cursor:pointer;
 }
-.glass-table, #adminTable {
-  width:100%;margin-top:10px;border-collapse:collapse;
-  border-radius:14px; overflow:hidden;background:transparent
+.filter-btn.active{background:#d1eafe}
+.seminar-card{border:1px solid #d7e5fe; border-radius:16px; padding:14px 16px; background:rgba(255,255,255,.7)}
+.seminar-card h4{margin: 0 0 6px}
+.category{display:inline-block; background:#e3f2fd; color:#274d79; padding:5px 10px; border-radius:6px; font-size:13px}
+
+/* ---------- Panels ---------- */
+.panel{display:none}
+.panel.show{display:block}
+
+/* ---------- Small polish ---------- */
+hr.hr{
+  border:none; height:1px; background: linear-gradient(90deg,transparent, #d8e7ff, transparent);
+  margin: 14px 0;
 }
-.glass-table th,
-#adminTable th,
-.glass-table td,
-#adminTable td {
-  border:1px solid #deecff7a;
-  padding:10px 12px;
-  background: rgba(248,251,255,0.67);
-}
-#adminTable th {background:#f0f5ff;}
-.row-won{background:#e0ffe4 !important;}
-.row-lost{background:#fff5e0 !important;}
-.priority-label{font-weight:700;display:block;margin:12px 0 4px;}
-.filter-buttons {
-  margin: 16px 0 10px 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
-}
-.filter-btn {
-  background:rgba(212,239,255,0.55);
-  padding:8px 16px;font-size:1rem;border-radius:9px;
-  font-weight:600;border:1px solid #a8d5fd; color:#286199;
-  box-shadow:0 1.5px 12px #90caf99a inset;
-  transition:.11s;
-}
-.filter-btn.active{background:#d1eafe; color:#245486;}
-.seminar-card h4{margin-bottom: 4px;}
-.seminar-card .category{display:inline-block;background:#e3f2fd80;padding:5px 13px;border-radius:6px;font-size:13px;margin:8px 0 0 0;letter-spacing:.02em;}
-@media (max-width:700px){
-  .glass-main{padding:20px 4vw 24px 4vw;}
-}
-::-webkit-scrollbar {
-  width: 10px; background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #d0e9ff99;
-  border-radius: 6px;
-}
+.help{font-size:.95em; color:#5a6a84}
 </style>
 </head>
 <body>
-<div class="glass-main">
-
-  <h1>Výběr seminářů</h1>
-
-  <div id="loginPanel" class="panel glass-card">
-    <label for="usernameIn">Přihlašovací jméno (příjmení.jméno nebo admin):</label>
-    <input type="text" id="usernameIn" maxlength="40" autocomplete="off">
-    <div id="adminPasswordDiv" style="display:none;margin-top:12px;">
-      <label for="adminPasswordIn">Admin heslo:</label>
-      <input type="password" id="adminPasswordIn" maxlength="40">
+  <div class="container">
+    <div class="header">
+      <h1>Výběr seminářů</h1>
+      <div class="help subtle">Přihlas se, projdi nabídku, vyber 3 priority a odešli — admin může vyhodnotit a případně znovu otevřít registraci.</div>
     </div>
-    <button id="loginBtn">Přihlásit</button>
-    <button id="browseSeminarsBtn" class="secondary">Prohlížet semináře</button>
-    <div class="status" id="statusLogin"></div>
-  </div>
 
-  <div id="browseSeminarsPanel" class="panel glass-card">
-    <h3>Přehled všech seminářů</h3>
-    <div class="filter-buttons">
-      <button class="filter-btn active" data-category="all">Všechny</button>
-      <button class="filter-btn" data-category="jazyky">Jazyky</button>
-      <button class="filter-btn" data-category="prirodni">Přírodní vědy</button>
-      <button class="filter-btn" data-category="humanitni">Humanitní</button>
-      <button class="filter-btn" data-category="umeni">Umění a kreativita</button>
-      <button class="filter-btn" data-category="wellness">Wellness</button>
-      <button class="filter-btn" data-category="ostatni">Ostatní</button>
-    </div>
-    <div id="seminarsList"></div>
-    <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
-  </div>
-  
-  <div id="votePanel" class="panel glass-card">
-    <form id="voteForm">
-      <label class="priority-label">1. priorita</label>
-      <select id="priority1"></select>
-      <label class="priority-label">2. priorita</label>
-      <select id="priority2"></select>
-      <label class="priority-label">3. priorita</label>
-      <select id="priority3"></select>
-      <button type="submit" id="submitVoteBtn">Odeslat priority</button>
-      <div class="status" id="statusVote"></div>
-    </form>
-  </div>
+    <!-- Login panel -->
+    <section id="loginPanel" class="glass section card panel show">
+      <label for="usernameIn">Přihlašovací jméno (příjmení.jméno nebo admin)</label>
+      <input id="usernameIn" type="text" maxlength="40" autocomplete="off" placeholder="např. kozisek.adam">
+      <div id="adminPasswordDiv" style="display:none; margin-top:10px;">
+        <label for="adminPasswordIn">Admin heslo</label>
+        <input id="adminPasswordIn" type="password" maxlength="40" placeholder="••••••••">
+      </div>
+      <div class="row">
+        <button id="loginBtn">Přihlásit</button>
+        <button id="browseSeminarsBtn" class="secondary">Prohlížet semináře</button>
+      </div>
+      <div class="status" id="statusLogin"></div>
+    </section>
 
-  <div id="adminPanel" class="panel glass-card">
-    <h3>Admin: přihlášky a výsledky</h3>
-    <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
-    <button id="reopenRegBtn">Otevřít registraci znovu</button>
-    <div class="status" id="statusAdmin"></div>
-    <table id="adminTable" class="glass-table"></table>
-    <button id="backToLoginAdminBtn">Odhlásit a přihlásit jiného</button>
+    <!-- Browse panel -->
+    <section id="browseSeminarsPanel" class="glass section card panel">
+      <h3>Přehled všech seminářů</h3>
+      <div class="filters">
+        <button class="filter-btn active" data-category="all">Všechny</button>
+        <button class="filter-btn" data-category="jazyky">Jazyky</button>
+        <button class="filter-btn" data-category="prirodni">Přírodní vědy</button>
+        <button class="filter-btn" data-category="humanitni">Humanitní</button>
+        <button class="filter-btn" data-category="umeni">Umění a kreativita</button>
+        <button class="filter-btn" data-category="wellness">Wellness</button>
+        <button class="filter-btn" data-category="ostatni">Ostatní</button>
+      </div>
+      <div id="seminarsList" class="grid"></div>
+      <div class="row">
+        <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
+      </div>
+    </section>
+
+    <!-- Vote panel -->
+    <section id="votePanel" class="glass section card panel">
+      <h3>Vyber své tři priority</h3>
+      <form id="voteForm">
+        <label class="priority-label">1. priorita</label>
+        <select id="priority1"></select>
+        <label class="priority-label">2. priorita</label>
+        <select id="priority2"></select>
+        <label class="priority-label">3. priorita</label>
+        <select id="priority3"></select>
+        <div class="row">
+          <button id="submitVoteBtn" type="submit">Odeslat priority</button>
+        </div>
+        <div class="status" id="statusVote"></div>
+      </form>
+    </section>
+
+    <!-- Admin panel -->
+    <section id="adminPanel" class="glass section card panel">
+      <h3>Admin: přihlášky a výsledky</h3>
+      <div class="row">
+        <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
+        <button id="reopenRegBtn" class="secondary">Otevřít registraci znovu</button>
+      </div>
+      <hr class="hr">
+      <table id="adminTable" class="table"></table>
+      <div class="row" style="margin-top:10px;">
+        <button id="backToLoginAdminBtn" class="secondary">Odhlásit a přihlásit jiného</button>
+      </div>
+      <div class="status" id="statusAdmin"></div>
+    </section>
   </div>
-</div>
 
 <script>
-// ... (JavaScript zůstává stejný jako v původním zadání)
+/* Zachovaná logika s původními ID prvků a endpointy */
+
+/* References */
+const loginPanel=document.getElementById('loginPanel');
+const votePanel=document.getElementById('votePanel');
+const adminPanel=document.getElementById('adminPanel');
+const browseSeminarsPanel=document.getElementById('browseSeminarsPanel');
+
+const usernameIn=document.getElementById('usernameIn');
+const adminPasswordDiv=document.getElementById('adminPasswordDiv');
+const adminPasswordIn=document.getElementById('adminPasswordIn');
+
+const loginBtn=document.getElementById('loginBtn');
+const browseSeminarsBtn=document.getElementById('browseSeminarsBtn');
+const backToLoginFromBrowse=document.getElementById('backToLoginFromBrowse');
+
+const statusLogin=document.getElementById('statusLogin');
+
+const voteForm=document.getElementById('voteForm');
+const statusVote=document.getElementById('statusVote');
+const priority1=document.getElementById('priority1');
+const priority2=document.getElementById('priority2');
+const priority3=document.getElementById('priority3');
+const submitVoteBtn=document.getElementById('submitVoteBtn');
+
+const adminTable=document.getElementById('adminTable');
+const evaluateBtn=document.getElementById('evaluateBtn');
+const reopenRegBtn=document.getElementById('reopenRegBtn');
+const backToLoginAdminBtn=document.getElementById('backToLoginAdminBtn');
+
+const seminarsList=document.getElementById('seminarsList');
+
+let seminars=[],username="",isAdmin=false,adminSecret="";
+
+/* Categories mapping (beze změny) */
+const categories = {
+  1: 'ostatni', 2: 'prirodni', 3: 'humanitni', 4: 'humanitni',
+  5: 'umeni', 6: 'ostatni', 7: 'umeni', 8: 'wellness',
+  9: 'prirodni', 10: 'jazyky', 11: 'humanitni'
+};
+const categoryNames = {
+  'jazyky': 'Jazyky', 'prirodni': 'Přírodní vědy', 'humanitni': 'Humanitní',
+  'umeni': 'Umění a kreativita', 'wellness': 'Wellness', 'ostatni': 'Ostatní'
+};
+
+/* Panel show helper */
+function show(id){
+  [loginPanel,votePanel,adminPanel,browseSeminarsPanel].forEach(p=>p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+
+/* Fill selects */
+function fillPrioritySelects(){
+  [priority1,priority2,priority3].forEach(sel=>{
+    sel.innerHTML='';
+    const d = document.createElement('option');
+    d.value=''; d.textContent='Vyber seminář';
+    sel.appendChild(d);
+    seminars.forEach(s=>{
+      const o=document.createElement('option');
+      o.value=s.id; o.textContent=`${s.name} — ${s.lecturers.join(', ')}`;
+      sel.appendChild(o);
+    });
+  });
+}
+
+/* Fetch seminars */
+async function fetchSeminars(){
+  const r = await fetch('/api/seminars');
+  const d = await r.json();
+  seminars = d.seminars || [];
+  fillPrioritySelects();
+}
+
+/* Render catalog */
+function displaySeminars(filter='all'){
+  seminarsList.innerHTML='';
+  const filtered = filter==='all' ? seminars : seminars.filter(s=>categories[s.id]===filter);
+  filtered.forEach(s=>{
+    const card = document.createElement('div');
+    card.className='seminar-card';
+    const cat = categoryNames[categories[s.id]] || 'Ostatní';
+    card.innerHTML = `
+      <h4>${s.name}</h4>
+      <div class="subtle">Vyučující: ${s.lecturers.join(', ') || 'neuvedeno'}</div>
+      <div class="subtle">Kapacita: ${s.capacity} míst</div>
+      <span class="category">${cat}</span>
+    `;
+    seminarsList.appendChild(card);
+  });
+}
+
+/* Filters */
+document.addEventListener('click', (e)=>{
+  const t = e.target;
+  if(t.classList.contains('filter-btn')){
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    t.classList.add('active');
+    displaySeminars(t.dataset.category);
+  }
+});
+
+/* Admin password show/hide */
+usernameIn.addEventListener('input', ()=>{
+  if((usernameIn.value||'').trim().toLowerCase()==='admin'){
+    adminPasswordDiv.style.display='block';
+  } else {
+    adminPasswordDiv.style.display='none';
+  }
+});
+
+/* Login */
+loginBtn.onclick = async ()=>{
+  statusLogin.textContent='';
+  const uname = (usernameIn.value||'').trim().toLowerCase();
+  if(!uname){ statusLogin.textContent='Zadej uživatelské jméno!'; return; }
+
+  if(uname==='admin'){
+    const pwd = adminPasswordIn.value||'';
+    if(!pwd){ statusLogin.textContent='Zadej heslo!'; return; }
+    const res = await fetch('/api/admin/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({password: pwd})
+    });
+    const data = await res.json();
+    if(res.ok){
+      isAdmin = true; adminSecret = data.secret;
+      await loadAdminPanel();
+      show('adminPanel');
+    } else {
+      statusLogin.textContent = data.error || 'Nesprávné heslo';
+    }
+    return;
+  }
+
+  username = uname;
+  await fetchSeminars();
+  show('votePanel');
+};
+
+/* Browse */
+document.getElementById('browseSeminarsBtn').onclick = async ()=>{
+  await fetchSeminars();
+  displaySeminars('all');
+  show('browseSeminarsPanel');
+};
+document.getElementById('backToLoginFromBrowse').onclick = ()=> show('loginPanel');
+
+/* Vote submit */
+voteForm.onsubmit = async (e)=>{
+  e.preventDefault();
+  statusVote.textContent='';
+  submitVoteBtn.disabled=true;
+
+  const p1 = Number(priority1.value), p2 = Number(priority2.value), p3 = Number(priority3.value);
+  if(!p1 || !p2 || !p3 || new Set([p1,p2,p3]).size!==3){
+    statusVote.textContent='Vyber 3 různé semináře';
+    submitVoteBtn.disabled=false; return;
+  }
+  const res = await fetch('/api/select',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username, priorities:[p1,p2,p3]})
+  });
+  const data = await res.json();
+  if(res.ok){
+    statusVote.textContent='Výběr uložen.';
+    setTimeout(()=>{ show('loginPanel'); usernameIn.value=''; adminPasswordIn.value=''; }, 1100);
+  } else {
+    statusVote.textContent = data.error || 'Chyba při ukládání';
+  }
+  submitVoteBtn.disabled=false;
+};
+
+/* Admin load + actions */
+async function loadAdminPanel(){
+  const res = await fetch('/api/admin/selections?secret='+adminSecret);
+  const data = await res.json();
+  const users = data.selections || [];
+  const evalRes = data.evaluationResult || {};
+
+  adminTable.innerHTML = '<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th><th>Akce</th></tr>';
+  users.forEach(u=>{
+    const tr = adminTable.insertRow(-1);
+    tr.setAttribute('data-username', u.username);
+    tr.insertCell().textContent = u.username;
+    u.priorities.forEach(p=>{
+      const sem = seminars.find(s=>s.id===p);
+      tr.insertCell().textContent = sem ? sem.name : '';
+    });
+    const act = tr.insertCell();
+    const btn = document.createElement('button');
+    btn.textContent='Smazat'; btn.className='danger';
+    btn.onclick = async ()=>{
+      if(!confirm('Opravdu smazat přihlášku uživatele '+u.username+'?')) return;
+      const r = await fetch('/api/admin/delete?secret='+adminSecret,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:u.username})
+      });
+      const d = await r.json();
+      if(r.ok){ await loadAdminPanel(); } else { alert(d.error||'Chyba'); }
+    };
+    act.appendChild(btn);
+  });
+
+  // highlight results
+  if(Object.keys(evalRes).length){
+    for(let r=1;r<adminTable.rows.length;++r){
+      const uname = adminTable.rows[r].getAttribute('data-username');
+      let assigned = null;
+      Object.entries(evalRes).forEach(([sid, list])=>{
+        if(list.includes(uname)) assigned = Number(sid);
+      });
+      for(let c=1;c<=3;++c){
+        const td = adminTable.rows[r].cells[c];
+        const cellId = (seminars.find(s=>s.name===td.textContent)||{}).id;
+        td.className = (cellId && assigned===cellId) ? 'row-won' : 'row-lost';
+        if(cellId && assigned===cellId){ adminTable.rows[r].cells[0].className='row-won'; }
+      }
+    }
+    document.getElementById('statusAdmin').textContent = 'Registrace uzavřena a vyhodnocena!';
+  } else {
+    document.getElementById('statusAdmin').textContent = data.registrationOpen ? 'Registrace otevřena.' : '';
+  }
+}
+
+evaluateBtn.onclick = async ()=>{
+  const r = await fetch('/api/admin/evaluate?secret='+adminSecret,{method:'POST'});
+  if(r.ok) await loadAdminPanel();
+};
+reopenRegBtn.onclick = async ()=>{
+  const r = await fetch('/api/admin/reopen?secret='+adminSecret,{method:'POST'});
+  if(r.ok) await loadAdminPanel();
+};
+backToLoginAdminBtn.onclick = ()=>{
+  username=''; isAdmin=false; adminSecret='';
+  usernameIn.value=''; adminPasswordIn.value='';
+  adminPasswordDiv.style.display='none';
+  show('loginPanel');
+};
+
+/* Init */
+fetchSeminars().catch(()=>{});
+show('loginPanel');
 </script>
 </body>
 </html>
