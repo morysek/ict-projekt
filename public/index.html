@@ -1,335 +1,483 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="cs">
 <head>
-<meta charset="utf-8" />
-<title>Výběr seminářů</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body {font-family:sans-serif;background:#f4f7fa;margin:0;padding:0;}
-.main {max-width:600px;margin:40px auto 0 auto;background:#fff;border-radius:10px;box-shadow:0 8px 24px #0002;padding:40px 26px 32px;}
-h1 {margin-top:0;text-align:center;}
-label {font-weight:600;}
-input, select, button {padding:10px 12px;font-size:16px; border-radius:7px; border:1px solid #ccc; outline:none;}
-input[type=text], input[type=password]{width:84%;}
-button{background:#1a822b;color:#fff;font-weight:600;border:none;cursor:pointer;margin:4px 2px;}
-button:disabled{background:#b5cca6;cursor:not-allowed;}
-button.danger{background:#c82333;}
-button.secondary{background:#6c757d;}
-.status{min-height:22px;text-align:center;margin-top:8px;}
-#adminTable{width:100%;margin-top:10px;border-collapse:collapse;}
-#adminTable th,#adminTable td{border:1px solid #dadada;padding:8px;}
-#adminTable th{background:#e7f0e2;}
-.row-won{background:#e8fce8 !important;}
-.row-lost{background:#ffeee6 !important;}
-.priority-label{font-weight:700;display:block;margin:12px 0 4px;}
-.panel{display:none;}
-.filter-buttons{margin:16px 0;display:flex;flex-wrap:wrap;gap:8px;}
-.filter-btn{background:#007bff;padding:8px 14px;font-size:14px;border-radius:5px;}
-.filter-btn.active{background:#0056b3;}
-.seminar-card{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0;background:#fafafa;}
-.seminar-card h4{margin:0 0 8px 0;}
-.seminar-card .category{display:inline-block;background:#e3f2fd;padding:4px 8px;border-radius:4px;font-size:13px;margin-top:4px;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Výběr seminářů</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { 
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 { 
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        input, select, button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        button:active { transform: translateY(0); }
+        .button-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        .seminar-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+        }
+        .seminar-card h3 { 
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .seminar-card p {
+            color: #666;
+            margin: 5px 0;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .filter-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: auto;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .priority-section {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .priority-label {
+            font-weight: bold;
+            color: #667eea;
+            margin: 15px 0 5px 0;
+            display: block;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid #c33;
+        }
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid #3c3;
+        }
+        #adminResults {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .result-seminar {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .result-seminar h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .student-item {
+            background: white;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            width: auto;
+        }
+    </style>
 </head>
 <body>
-<div class="main">
-  <h1>Výběr seminářů</h1>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen active">
+            <h1>🎓 Výběr seminářů</h1>
+            <input type="text" id="usernameInput" placeholder="Přihlašovací jméno (koz.jmeno nebo admin)">
+            <input type="password" id="adminPasswordInput" placeholder="Admin heslo (pouze pro admina)" style="display:none;">
+            <button onclick="login()">Přihlásit</button>
+            <button class="button-secondary" onclick="showScreen('browseScreen')">Prohlížet semináře</button>
+            <div id="loginError"></div>
+        </div>
 
-  <div id="loginPanel" class="panel">
-    <label for="usernameIn">Přihlašovací jméno (koz.jmeno nebo admin):</label>
-    <input type="text" id="usernameIn" maxlength="40" autocomplete="off">
-    <div id="adminPasswordDiv" style="display:none;margin-top:12px;">
-      <label for="adminPasswordIn">Admin heslo:</label>
-      <input type="password" id="adminPasswordIn" maxlength="40">
+        <!-- Browse Seminars Screen -->
+        <div id="browseScreen" class="screen">
+            <h1>📚 Přehled všech seminářů</h1>
+            <div class="filters">
+                <button class="filter-btn active" onclick="filterSeminars('all')">Všechny</button>
+                <button class="filter-btn" onclick="filterSeminars('languages')">Jazyky</button>
+                <button class="filter-btn" onclick="filterSeminars('science')">Přírodní vědy</button>
+                <button class="filter-btn" onclick="filterSeminars('humanities')">Humanitní</button>
+                <button class="filter-btn" onclick="filterSeminars('arts')">Umění a kreativita</button>
+                <button class="filter-btn" onclick="filterSeminars('wellness')">Wellness</button>
+                <button class="filter-btn" onclick="filterSeminars('other')">Ostatní</button>
+            </div>
+            <div id="seminarsList"></div>
+            <button class="button-secondary" onclick="showScreen('loginScreen')">Zpět na přihlášení</button>
+        </div>
+
+        <!-- Student Selection Screen -->
+        <div id="selectionScreen" class="screen">
+            <h1>🎯 Vyber 5 priorit</h1>
+            <div class="priority-section">
+                <label class="priority-label">1. priorita (nejdůležitější)</label>
+                <select id="priority1"></select>
+                
+                <label class="priority-label">2. priorita</label>
+                <select id="priority2"></select>
+                
+                <label class="priority-label">3. priorita</label>
+                <select id="priority3"></select>
+                
+                <label class="priority-label">4. priorita</label>
+                <select id="priority4"></select>
+                
+                <label class="priority-label">5. priorita</label>
+                <select id="priority5"></select>
+            </div>
+            <button onclick="submitPriorities()">Odeslat priority</button>
+            <button class="button-secondary" onclick="logout()">Odhlásit a přihlásit jiného</button>
+            <div id="selectionMessage"></div>
+        </div>
+
+        <!-- Admin Screen -->
+        <div id="adminScreen" class="screen">
+            <h1>👨‍💼 Admin: přihlášky a výsledky</h1>
+            <button onclick="evaluateSelections()">Uzavřít a vyhodnotit</button>
+            <button onclick="reopenRegistration()">Otevřít registraci znovu</button>
+            <button class="button-secondary" onclick="logout()">Odhlásit a přihlásit jiného</button>
+            <div id="adminResults"></div>
+        </div>
     </div>
-    <button id="loginBtn">Přihlásit</button>
-    <button id="browseSeminarsBtn" class="secondary">Prohlížet semináře</button>
-    <div class="status" id="statusLogin"></div>
-  </div>
 
-  <div id="browseSeminarsPanel" class="panel">
-    <h3>Přehled všech seminářů</h3>
-    <div class="filter-buttons">
-      <button class="filter-btn active" data-category="all">Všechny</button>
-      <button class="filter-btn" data-category="jazyky">Jazyky</button>
-      <button class="filter-btn" data-category="prirodni">Přírodní vědy</button>
-      <button class="filter-btn" data-category="humanitni">Humanitní</button>
-      <button class="filter-btn" data-category="umeni">Umění a kreativita</button>
-      <button class="filter-btn" data-category="wellness">Wellness</button>
-      <button class="filter-btn" data-category="ostatni">Ostatní</button>
-    </div>
-    <div id="seminarsList"></div>
-    <button id="backToLoginFromBrowse" class="secondary">Zpět na přihlášení</button>
-  </div>
-  
-  <div id="votePanel" class="panel">
-    <form id="voteForm">
-      <label class="priority-label">1. priorita</label>
-      <select id="priority1"></select>
-      <label class="priority-label">2. priorita</label>
-      <select id="priority2"></select>
-      <label class="priority-label">3. priorita</label>
-      <select id="priority3"></select>
-      <button type="submit" id="submitVoteBtn">Odeslat priority</button>
-      <div class="status" id="statusVote"></div>
-    </form>
-  </div>
+    <script>
+        let currentUser = null;
+        let isAdmin = false;
+        let adminSecret = null;
+        let allSeminars = [];
 
-  <div id="adminPanel" class="panel">
-    <h3>Admin: přihlášky a výsledky</h3>
-    <button id="evaluateBtn">Uzavřít a vyhodnotit</button>
-    <button id="reopenRegBtn">Otevřít registraci znovu</button>    
-    <div class="status" id="statusAdmin"></div>
-    <table id="adminTable"></table>
-    <button id="backToLoginAdminBtn">Odhlásit a přihlásit jiného</button>
-  </div>
-</div>
+        const categoryMap = {
+            languages: [3, 4, 6, 7, 10],
+            science: [1, 2, 3, 9],
+            humanities: [4, 11],
+            arts: [5, 7],
+            wellness: [8],
+            other: []
+        };
 
-<script>
-const loginPanel=document.getElementById('loginPanel');
-const votePanel=document.getElementById('votePanel');
-const adminPanel=document.getElementById('adminPanel');
-const browseSeminarsPanel=document.getElementById('browseSeminarsPanel');
-const usernameIn=document.getElementById('usernameIn');
-const adminPasswordDiv=document.getElementById('adminPasswordDiv');
-const adminPasswordIn=document.getElementById('adminPasswordIn');
-const loginBtn=document.getElementById('loginBtn');
-const browseSeminarsBtn=document.getElementById('browseSeminarsBtn');
-const backToLoginFromBrowse=document.getElementById('backToLoginFromBrowse');
-const statusLogin=document.getElementById('statusLogin');
-const voteForm=document.getElementById('voteForm');
-const statusVote=document.getElementById('statusVote');
-const priority1=document.getElementById('priority1');
-const priority2=document.getElementById('priority2');
-const priority3=document.getElementById('priority3');
-const submitVoteBtn=document.getElementById('submitVoteBtn');
-const adminTable=document.getElementById('adminTable');
-const evaluateBtn=document.getElementById('evaluateBtn');
-const reopenRegBtn=document.getElementById('reopenRegBtn');
-const backToLoginAdminBtn=document.getElementById('backToLoginAdminBtn');
-const seminarsList=document.getElementById('seminarsList');
+        async function login() {
+            const username = document.getElementById('usernameInput').value.trim();
+            const errorDiv = document.getElementById('loginError');
+            
+            if (!username) {
+                errorDiv.innerHTML = '<div class="error">Zadej své přihlašovací jméno!</div>';
+                return;
+            }
 
-let seminars=[],username="",isAdmin=false,adminSecret="";
+            if (username.toLowerCase() === 'admin') {
+                const password = document.getElementById('adminPasswordInput').value;
+                document.getElementById('adminPasswordInput').style.display = 'block';
+                
+                if (!password) {
+                    errorDiv.innerHTML = '<div class="error">Zadej admin heslo!</div>';
+                    return;
+                }
 
-const categories = {
-  1: 'ostatni', 2: 'prirodni', 3: 'humanitni', 4: 'humanitni',
-  5: 'umeni', 6: 'ostatni', 7: 'umeni', 8: 'wellness',
-  9: 'prirodni', 10: 'jazyky', 11: 'humanitni'
-};
-
-const categoryNames = {
-  'jazyky': 'Jazyky', 'prirodni': 'Přírodní vědy', 'humanitni': 'Humanitní',
-  'umeni': 'Umění a kreativita', 'wellness': 'Wellness', 'ostatni': 'Ostatní'
-};
-
-function show(panel){ 
-  for(const p of document.querySelectorAll('.panel'))p.style.display='none'; 
-  document.getElementById(panel).style.display='block'; 
-}
-
-function fillPrioritySelects(){
-  [priority1,priority2,priority3].forEach((sel,ix)=>{
-    sel.innerHTML='';
-    const dOpt=document.createElement('option');dOpt.value='';dOpt.textContent='Vyber seminář';sel.appendChild(dOpt);
-    seminars.forEach(s=>{
-      const o=document.createElement('option');
-      o.value=s.id;
-      o.textContent=`${s.name} — ${s.lecturers.join(', ')}`;
-      sel.appendChild(o);
-    });
-  });
-}
-
-async function fetchSeminars(){ 
-  const r=await fetch('/api/seminars'); 
-  const d=await r.json(); 
-  seminars=d.seminars; 
-  fillPrioritySelects(); 
-}
-
-function displaySeminars(filter='all'){
-  seminarsList.innerHTML='';
-  const filtered = filter==='all' ? seminars : seminars.filter(s=>categories[s.id]===filter);
-  filtered.forEach(s=>{
-    const card = document.createElement('div');
-    card.className='seminar-card';
-    const catName = categoryNames[categories[s.id]] || 'Ostatní';
-    card.innerHTML=`
-      <h4>${s.name}</h4>
-      <div>Vyučující: ${s.lecturers.join(', ') || 'neuvedeno'}</div>
-      <div>Kapacita: ${s.capacity} míst</div>
-      <span class="category">${catName}</span>
-    `;
-    seminarsList.appendChild(card);
-  });
-}
-
-browseSeminarsBtn.onclick=async ()=>{
-  await fetchSeminars();
-  displaySeminars('all');
-  show('browseSeminarsPanel');
-};
-
-backToLoginFromBrowse.onclick=()=>{
-  show('loginPanel');
-};
-
-document.querySelectorAll('.filter-btn').forEach(btn=>{
-  btn.onclick=()=>{
-    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    displaySeminars(btn.dataset.category);
-  };
-});
-
-usernameIn.addEventListener('input', ()=>{
-  if(usernameIn.value.trim().toLowerCase()==='admin'){
-    adminPasswordDiv.style.display='block';
-  } else {
-    adminPasswordDiv.style.display='none';
-  }
-});
-
-loginBtn.onclick=async ()=>{
-  statusLogin.textContent='';
-  let uname=(usernameIn.value||"").trim().toLowerCase();
-  if(!uname)return statusLogin.textContent='Zadej uživatelské jméno!';
-  
-  if(uname==="admin"){ 
-    const pwd = adminPasswordIn.value||"";
-    if(!pwd) { statusLogin.textContent='Zadej heslo!'; return; }
-    let res = await fetch('/api/admin/login', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({password:pwd})
-    });
-    let data = await res.json();
-    if(res.ok){
-      isAdmin=true;
-      adminSecret=data.secret;
-      await loadAdminPanel();
-      show('adminPanel');
-    } else {
-      statusLogin.textContent = data.error || 'Nesprávné heslo';
-    }
-    return;
-  }
-  
-  username=uname;
-  await fetchSeminars();
-  show('votePanel');
-};
-
-voteForm.onsubmit=async e=>{
-  e.preventDefault();
-  statusVote.textContent='';
-  submitVoteBtn.disabled=true;
-  const p1=Number(priority1.value),p2=Number(priority2.value),p3=Number(priority3.value);
-  if(!p1||!p2||!p3||new Set([p1,p2,p3]).size!==3){
-    statusVote.textContent='Vyber 3 různé semináře';
-    submitVoteBtn.disabled=false;
-    return;
-  }
-  let res=await fetch('/api/select',{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({username,priorities:[p1,p2,p3]})
-  });
-  let data=await res.json();
-  if(res.ok) { 
-    statusVote.textContent="Výběr uložen."; 
-    setTimeout(()=>{show('loginPanel');usernameIn.value="";adminPasswordIn.value="";},1100); 
-  }
-  else statusVote.textContent=data.error||'Chyba při ukládání';
-  submitVoteBtn.disabled=false;
-};
-
-async function loadAdminPanel(){ 
-  let res = await fetch('/api/admin/selections?secret='+adminSecret);
-  let data=await res.json(); 
-  let users=data.selections, evalRes=data.evaluationResult||{};
-  adminTable.innerHTML='<tr><th>Username</th><th>1. Priorita</th><th>2. Priorita</th><th>3. Priorita</th><th>Akce</th></tr>';
-  users.forEach(u=>{
-    let tr=adminTable.insertRow(-1);
-    tr.setAttribute('data-username',u.username); 
-    tr.insertCell().textContent = u.username;
-    u.priorities.forEach((p,ix)=>{
-      let sem=seminars.find(s=>s.id===p);
-      tr.insertCell().textContent=sem?sem.name:"";
-    });
-    let actCell = tr.insertCell();
-    let delBtn = document.createElement('button');
-    delBtn.textContent='Smazat';
-    delBtn.className='danger';
-    delBtn.onclick=async()=>{ await deleteSelection(u.username); };
-    actCell.appendChild(delBtn);
-  });
-  
-  if(Object.keys(evalRes).length){
-    for(let r=1;r<adminTable.rows.length;++r){
-      let uname=adminTable.rows[r].getAttribute('data-username');
-      let assigned=null;
-      Object.entries(evalRes).forEach(([sid,names])=>{
-        if(names.includes(uname)) assigned=Number(sid);
-      });
-      for(let c=1;c<=3;++c){
-        let td=adminTable.rows[r].cells[c];
-        let cellSem=(seminars.find(s=>s.name===td.textContent)||{}).id;
-        if(cellSem && assigned===cellSem) {
-          td.className="row-won";
-          adminTable.rows[r].cells[0].className="row-won";
+                try {
+                    const res = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.ok) {
+                        isAdmin = true;
+                        adminSecret = data.secret;
+                        currentUser = 'admin';
+                        await loadAdminData();
+                        showScreen('adminScreen');
+                    } else {
+                        errorDiv.innerHTML = '<div class="error">Nesprávné admin heslo!</div>';
+                    }
+                } catch (err) {
+                    errorDiv.innerHTML = '<div class="error">Chyba při přihlašování!</div>';
+                }
+            } else {
+                currentUser = username;
+                await loadSeminars();
+                showScreen('selectionScreen');
+            }
         }
-        else td.className="row-lost";
-      }
-    }
-    statusAdmin.textContent="Registrace uzavřena a vyhodnocena!";
-  }
-  else statusAdmin.textContent=data.registrationOpen ? "Registrace otevřena." : "";
-}
 
-async function deleteSelection(uname){
-  if(!confirm('Opravdu smazat přihlášku uživatele '+uname+'?')) return;
-  let res = await fetch('/api/admin/delete?secret='+adminSecret, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({username:uname})
-  });
-  let data = await res.json();
-  if(res.ok) {
-    statusAdmin.textContent = data.message;
-    await loadAdminPanel();
-  } else {
-    statusAdmin.textContent = data.error || 'Chyba při mazání.';
-  }
-}
+        async function loadSeminars() {
+            try {
+                const res = await fetch('/api/seminars');
+                const data = await res.json();
+                allSeminars = data.seminars;
+                
+                for (let i = 1; i <= 5; i++) {
+                    const select = document.getElementById(`priority${i}`);
+                    select.innerHTML = '<option value="">-- Vyber seminář --</option>';
+                    allSeminars.forEach(s => {
+                        select.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('Chyba při načítání seminářů:', err);
+            }
+        }
 
-evaluateBtn.onclick=async ()=>{
-  let res = await fetch('/api/admin/evaluate?secret='+adminSecret, {method:"POST"}); 
-  if(res.ok) await loadAdminPanel();
-};
+        async function submitPriorities() {
+            const priorities = [];
+            for (let i = 1; i <= 5; i++) {
+                const val = document.getElementById(`priority${i}`).value;
+                if (!val) {
+                    document.getElementById('selectionMessage').innerHTML = 
+                        '<div class="error">Musíš vybrat všech 5 priorit!</div>';
+                    return;
+                }
+                priorities.push(parseInt(val));
+            }
 
-reopenRegBtn.onclick=async ()=>{
-  let res = await fetch('/api/admin/reopen?secret='+adminSecret, {method:"POST"});
-  let data = await res.json();
-  if(res.ok) {
-    statusAdmin.textContent = data.message;
-    await loadAdminPanel();
-  } else statusAdmin.textContent = data.error || "Chyba při opětovném otevření registrace.";
-};
+            if (new Set(priorities).size !== 5) {
+                document.getElementById('selectionMessage').innerHTML = 
+                    '<div class="error">Každý seminář musí být jiný!</div>';
+                return;
+            }
 
-backToLoginAdminBtn.onclick=()=>{
-  username="";
-  isAdmin=false;
-  adminSecret="";
-  usernameIn.value="";
-  adminPasswordIn.value="";
-  statusLogin.textContent="";
-  adminPasswordDiv.style.display='none';
-  show('loginPanel');
-}
+            try {
+                const res = await fetch('/api/select', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser, priorities })
+                });
+                const data = await res.json();
+                
+                if (data.ok) {
+                    document.getElementById('selectionMessage').innerHTML = 
+                        '<div class="success">' + data.message + '</div>';
+                } else {
+                    document.getElementById('selectionMessage').innerHTML = 
+                        '<div class="error">' + data.error + '</div>';
+                }
+            } catch (err) {
+                document.getElementById('selectionMessage').innerHTML = 
+                    '<div class="error">Chyba při odesílání!</div>';
+            }
+        }
 
-fetchSeminars();
-show('loginPanel');
-</script>
+        async function loadAdminData() {
+            try {
+                const res = await fetch(`/api/admin/selections?secret=${adminSecret}`);
+                const data = await res.json();
+                
+                let html = '<h2>📋 Status: ' + (data.registrationOpen ? 'OTEVŘENO' : 'UZAVŘENO') + '</h2>';
+                html += '<h3>Celkem přihlášek: ' + data.selections.length + '</h3>';
+                
+                if (Object.keys(data.evaluationResult).length > 0) {
+                    html += '<h2>🎯 Výsledky přiřazení:</h2>';
+                    allSeminars.forEach(sem => {
+                        const students = data.evaluationResult[sem.id] || [];
+                        html += `<div class="result-seminar">
+                            <h4>${sem.name} (${students.length}/${sem.capacity})</h4>`;
+                        students.forEach(student => {
+                            html += `<div class="student-item">
+                                <span>${student}</span>
+                                <button class="delete-btn" onclick="deleteStudent('${student}')">Smazat</button>
+                            </div>`;
+                        });
+                        html += '</div>';
+                    });
+                }
+                
+                html += '<h2>📝 Všechny přihlášky:</h2>';
+                data.selections.forEach(sel => {
+                    const prioNames = sel.priorities.map(pid => {
+                        const sem = allSeminars.find(s => s.id === pid);
+                        return sem ? sem.name : 'N/A';
+                    });
+                    html += `<div class="student-item">
+                        <div>
+                            <strong>${sel.username}</strong><br>
+                            <small>1. ${prioNames[0]}<br>
+                            2. ${prioNames[1]}<br>
+                            3. ${prioNames[2]}<br>
+                            4. ${prioNames[3]}<br>
+                            5. ${prioNames[4]}</small>
+                        </div>
+                        <button class="delete-btn" onclick="deleteStudent('${sel.username}')">Smazat</button>
+                    </div>`;
+                });
+                
+                document.getElementById('adminResults').innerHTML = html;
+            } catch (err) {
+                console.error('Chyba při načítání admin dat:', err);
+            }
+        }
+
+        async function evaluateSelections() {
+            try {
+                const res = await fetch(`/api/admin/evaluate?secret=${adminSecret}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.ok) {
+                    await loadAdminData();
+                    alert('Registrace uzavřena a vyhodnocena!');
+                }
+            } catch (err) {
+                alert('Chyba při vyhodnocování!');
+            }
+        }
+
+        async function reopenRegistration() {
+            try {
+                const res = await fetch(`/api/admin/reopen?secret=${adminSecret}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.ok) {
+                    await loadAdminData();
+                    alert('Registrace znovu otevřena!');
+                }
+            } catch (err) {
+                alert('Chyba při otevírání registrace!');
+            }
+        }
+
+        async function deleteStudent(username) {
+            if (!confirm(`Opravdu smazat přihlášku uživatele ${username}?`)) return;
+            
+            try {
+                const res = await fetch(`/api/admin/delete?secret=${adminSecret}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    await loadAdminData();
+                }
+            } catch (err) {
+                alert('Chyba při mazání!');
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function logout() {
+            currentUser = null;
+            isAdmin = false;
+            adminSecret = null;
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').style.display = 'none';
+            document.getElementById('loginError').innerHTML = '';
+            showScreen('loginScreen');
+        }
+
+        async function filterSeminars(category) {
+            if (!allSeminars.length) {
+                const res = await fetch('/api/seminars');
+                const data = await res.json();
+                allSeminars = data.seminars;
+            }
+
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            let filtered = allSeminars;
+            if (category !== 'all') {
+                filtered = allSeminars.filter(s => categoryMap[category]?.includes(s.id));
+            }
+
+            let html = '';
+            filtered.forEach(s => {
+                const lecturers = s.lecturers.length ? s.lecturers.join(', ') : 'TBA';
+                html += `<div class="seminar-card">
+                    <h3>${s.name}</h3>
+                    <p><strong>Lektor:</strong> ${lecturers}</p>
+                    <p><strong>Kapacita:</strong> ${s.capacity} míst</p>
+                </div>`;
+            });
+            document.getElementById('seminarsList').innerHTML = html;
+        }
+
+        // Inicializace browseru
+        filterSeminars('all');
+    </script>
 </body>
 </html>
