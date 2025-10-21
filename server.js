@@ -1,45 +1,59 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 app.use(express.json());
 
-const seminars = [
-    { id: 1, name: "Otevřená laboratoř", lecturers: ["Miroslav Pražienka"], capacity: 20 },
-    { id: 2, name: "Praktická Biologie: od buněk k ekosystémům", lecturers: ["Marek Kasner"], capacity: 20 },
-    { id: 3, name: "Nutritional Anthropology", lecturers: ["Melanie Rada"], capacity: 20 },
-    { id: 4, name: "Southern Gothic Literature – Writings from the Peach State", lecturers: ["Melanie Rada"], capacity: 20 },
-    { id: 5, name: "Seminář vizuální tvorby", lecturers: ["Olga Vršková"], capacity: 20 },
-    { id: 6, name: "Public Speaking and Debate", lecturers: ["Petra Schmalzová"], capacity: 20 },
-    { id: 7, name: "Seminář tvůrčího překladu a tvůrčího psaní", lecturers: ["Petr Fantys", "Marek Šindelka"], capacity: 20 },
-    { id: 8, name: "Antistres – tělo, dýchání, mysl", lecturers: ["Petra Vágnerová", "Petr Knotek"], capacity: 20 },
-    { id: 9, name: "Seminář Zajímavá matematika", lecturers: ["Štěpánka Svobodová"], capacity: 20 },
-    { id: 10, name: "Seminář Základy latiny", lecturers: ["Tereza Samková"], capacity: 20 },
-    { id: 11, name: "Seminář Úvod do moderní psychologie", lecturers: [], capacity: 20 }
-];
+// Načtení dat z CSV souborů
+let seminars = [];
+let allowedStudents = [];
 
-const allowedStudents = [
-    'kozisek.adam', 'kozisek.alena', 'kozisek.anna', 'kozisek.antonin', 'kozisek.barbora',
-    'kozisek.benjamin', 'kozisek.daniela', 'kozisek.david', 'kozisek.dominik', 'kozisek.elena',
-    'kozisek.erik', 'kozisek.eva', 'kozisek.filip', 'kozisek.frantisek', 'kozisek.gabriela',
-    'kozeny.adam', 'kozeny.alena', 'kozeny.anna', 'kozeny.antonin', 'kozeny.barbora',
-    'kozeny.benjamin', 'kozeny.daniela', 'kozeny.david', 'kozeny.dominik', 'kozeny.elena',
-    'kozela.adam', 'kozela.alena', 'kozela.anna', 'kozela.barbora', 'kozela.benjamin',
-    'kozela.daniela', 'kozela.david', 'kozela.dominik', 'kozela.erik', 'kozela.eva',
-    'kozuch.adam', 'kozuch.alena', 'kozuch.anna', 'kozuch.antonin', 'kozuch.barbora',
-    'kozuch.benjamin', 'kozuch.daniela', 'kozuch.david', 'kozuch.dominik', 'kozuch.elena',
-    'kozusnik.adam', 'kozusnik.alena', 'kozusnik.anna', 'kozusnik.antonin', 'kozusnik.barbora',
-    'kozusnik.benjamin', 'kozusnik.daniela', 'kozusnik.david', 'kozusnik.dominik', 'kozusnik.elena',
-    'kozisek.hana', 'kozisek.helena', 'kozisek.honza', 'kozisek.ivan', 'kozisek.jakub',
-    'kozeny.filip', 'kozeny.frantisek', 'kozeny.gabriela', 'kozeny.hana', 'kozeny.helena',
-    'kozela.filip', 'kozela.frantisek', 'kozela.gabriela', 'kozela.hana', 'kozela.helena',
-    'kozuch.erik', 'kozuch.eva', 'kozuch.filip', 'kozuch.frantisek', 'kozuch.gabriela',
-    'kozusnik.erik', 'kozusnik.eva', 'kozusnik.filip', 'kozusnik.frantisek', 'kozusnik.gabriela',
-    'kozisek.jana', 'kozisek.jaroslav', 'kozisek.josef', 'kozisek.julie', 'kozisek.karin',
-    'kozeny.honza', 'kozeny.ivan', 'kozeny.jakub', 'kozeny.jana', 'kozeny.jaroslav',
-    'kozela.honza', 'kozela.ivan', 'kozela.jakub', 'kozela.jana', 'kozela.jaroslav',
-    'kozuch.hana', 'kozuch.helena', 'kozuch.honza', 'kozuch.ivan', 'kozuch.jakub'
-];
+function loadCSVData() {
+    // Načtení seminářů
+    try {
+        const seminarsCSV = fs.readFileSync('seminare.csv', 'utf8');
+        const lines = seminarsCSV.split('\n').filter(line => line.trim());
+        
+        // Přeskočit hlavičku (první řádek)
+        for (let i = 1; i < lines.length; i++) {
+            const parts = lines[i].split(',');
+            if (parts.length >= 4) {
+                seminars.push({
+                    id: parseInt(parts[0].trim()),
+                    name: parts[1].trim(),
+                    lecturers: parts[2].trim() ? parts[2].trim().split(';').map(l => l.trim()) : [],
+                    capacity: parseInt(parts[3].trim())
+                });
+            }
+        }
+        console.log(`Načteno ${seminars.length} seminářů`);
+    } catch (err) {
+        console.error('Chyba při načítání seminare.csv:', err);
+        process.exit(1);
+    }
+
+    // Načtení povolených studentů
+    try {
+        const studentsCSV = fs.readFileSync('allowed_students.csv', 'utf8');
+        const lines = studentsCSV.split('\n').filter(line => line.trim());
+        
+        // Přeskočit hlavičku (první řádek)
+        for (let i = 1; i < lines.length; i++) {
+            const username = lines[i].trim().toLowerCase();
+            if (username) {
+                allowedStudents.push(username);
+            }
+        }
+        console.log(`Načteno ${allowedStudents.length} povolených studentů`);
+    } catch (err) {
+        console.error('Chyba při načítání allowed_students.csv:', err);
+        process.exit(1);
+    }
+}
+
+// Načíst data při startu
+loadCSVData();
 
 const ADMIN_PASSWORD = "milujikozeje";
 
