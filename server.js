@@ -145,7 +145,7 @@ function assignSeminars(all, seminars) {
     });
     
     return { assignments, studentAssignments };
-});
+}
 
 app.get('*', (_req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
