@@ -45,7 +45,7 @@ const ADMIN_PASSWORD = "milujikozeje";
 
 let registrationOpen = true;
 const selections = [];
-let evaluationResult = {};
+let evaluationResult = null;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -68,12 +68,10 @@ app.post('/api/select', (req, res) => {
     
     if (usernameLower === 'admin') return res.status(403).json({ error: 'Jméno admin je vyhrazeno pro administraci' });
     
-    // OKAMŽITÁ KONTROLA - pokud není na seznamu, nepokračuj
     if (!allowedStudents.includes(usernameLower)) {
         return res.status(403).json({ error: 'Toto jméno není na seznamu povolených žáků!' });
     }
     
-    // Kontrola 5 priorit
     if (
         !Array.isArray(priorities) || 
         priorities.length !== 5 ||
@@ -106,7 +104,7 @@ app.post('/api/admin/evaluate', (req, res) => {
 app.post('/api/admin/reopen', (req, res) => {
     if (req.query.secret !== 'adminsecret') return res.status(403).json({ error: 'Přístup odepřen' });
     registrationOpen = true;
-    evaluationResult = {};
+    evaluationResult = null;
     res.json({ ok: true, message: 'Registrace znovu otevřena.' });
 });
 
@@ -122,27 +120,32 @@ app.post('/api/admin/delete', (req, res) => {
     }
 });
 
-// VYHODNOCENÍ S 5 PRIORITAMI - seřazení podle času, férové přiřazení
 function assignSeminars(all, seminars) {
     const assignments = {};
+    const studentAssignments = {};
+    
     seminars.forEach(s => assignments[s.id] = []);
     
-    // Seřaď podle času registrace (kdo dřív, má přednost při stejné prioritě)
     const sorted = [...all].sort((a, b) => a.timestamp - b.timestamp);
     
-    // Každému přiřaď nejvyšší dostupnou prioritu
     sorted.forEach(({ username, priorities }) => {
+        let assigned = false;
         for (const pid of priorities) {
             const seminar = seminars.find(s => s.id === pid);
             if (assignments[pid].length < seminar.capacity) {
                 assignments[pid].push(username);
-                break; // Přiřazeno -> další student
+                studentAssignments[username] = pid;
+                assigned = true;
+                break;
             }
+        }
+        if (!assigned) {
+            studentAssignments[username] = null;
         }
     });
     
-    return assignments;
-}
+    return { assignments, studentAssignments };
+});
 
 app.get('*', (_req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
