@@ -532,54 +532,68 @@
 
         filterSeminars('all');
     </script>
-   <script>
+ <script>
   (function () {
     const goat = document.getElementById('goat-logo');
     if (!goat) return;
 
-    // Start přesně v levém horním rohu viewportu
+    // Startovní pozice v levém horním rohu (0,0)
     let x = 0;
     let y = 0;
 
-    // Rychlost v px/frame (cca 60 fps → ~px/s)
-    let vx = 3.0;
-    let vy = 2.2;
+    // Rychlost pohybu v pixelech za frame
+    let vx = 3.5;
+    let vy = 2.5;
 
     let running = false;
     let rafId = null;
 
-    function bounds() {
-      // Přesné hranice viewportu
-      const maxX = window.innerWidth - goat.offsetWidth;
-      const maxY = window.innerHeight - goat.offsetHeight;
-      return { maxX, maxY };
+    function getBounds() {
+      // Přesné hranice viewportu bez jakéhokoli offsetu
+      const rect = goat.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      
+      return {
+        maxX: window.innerWidth - width,
+        maxY: window.innerHeight - height
+      };
     }
 
     function clampToViewport() {
-      const { maxX, maxY } = bounds();
+      const { maxX, maxY } = getBounds();
       x = Math.max(0, Math.min(x, maxX));
       y = Math.max(0, Math.min(y, maxY));
     }
 
     function step() {
-      const { maxX, maxY } = bounds();
+      const { maxX, maxY } = getBounds();
 
+      // Aktualizace pozice
       x += vx;
       y += vy;
 
-      // Odraz od svislých hran viewportu
-      if (x <= 0) { x = 0; vx = Math.abs(vx); }
-      else if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
+      // Odraz od levé a pravé hrany viewportu
+      if (x <= 0) {
+        x = 0;
+        vx = Math.abs(vx);
+      } else if (x >= maxX) {
+        x = maxX;
+        vx = -Math.abs(vx);
+      }
 
-      // Odraz od vodorovných hran viewportu
-      if (y <= 0) { y = 0; vy = Math.abs(vy); }
-      else if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
+      // Odraz od horní a dolní hrany viewportu
+      if (y <= 0) {
+        y = 0;
+        vy = Math.abs(vy);
+      } else if (y >= maxY) {
+        y = maxY;
+        vy = -Math.abs(vy);
+      }
 
-      // Volitelně zarovnej na celé pixely kvůli ostrosti:
-      // const tx = Math.round(x); const ty = Math.round(y);
-      // goat.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-
+      // Aplikace transformace (plynulejší než top/left)
       goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
       rafId = requestAnimationFrame(step);
     }
 
@@ -590,8 +604,10 @@
       rafId = requestAnimationFrame(step);
     }
 
+    // Spuštění animace po kliknutí
     goat.addEventListener('click', start);
 
+    // Při změně velikosti okna přepočítej pozici
     window.addEventListener('resize', () => {
       clampToViewport();
       goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
