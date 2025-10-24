@@ -537,26 +537,20 @@
     const goat = document.getElementById('goat-logo');
     if (!goat) return;
 
-    // Startovní pozice v levém horním rohu
+    // Pevná velikost loga z CSS (44x44 px, na mobilu 32x32)
+    const GOAT_SIZE = window.innerWidth <= 480 ? 32 : 44;
+
     let x = 0;
     let y = 0;
-
-    // Rychlost pohybu v pixelech za frame
     let vx = 3.5;
     let vy = 2.5;
-
     let running = false;
-    let rafId = null;
 
     function getBounds() {
-      // Používáme offsetWidth/offsetHeight pro skutečnou velikost elementu
-      // Ne getBoundingClientRect, protože to se mění s transformem
-      const width = goat.offsetWidth;
-      const height = goat.offsetHeight;
-      
+      // Hranice = celá obrazovka MÍNUS velikost obrázku
       return {
-        maxX: window.innerWidth - width,
-        maxY: window.innerHeight - height
+        maxX: window.innerWidth - GOAT_SIZE,
+        maxY: window.innerHeight - GOAT_SIZE
       };
     }
 
@@ -569,11 +563,10 @@
     function step() {
       const { maxX, maxY } = getBounds();
 
-      // Aktualizace pozice
       x += vx;
       y += vy;
 
-      // Odraz od levé a pravé hrany viewportu
+      // Odraz od levé/pravé hrany (x = 0 až maxX)
       if (x <= 0) {
         x = 0;
         vx = Math.abs(vx);
@@ -582,7 +575,7 @@
         vx = -Math.abs(vx);
       }
 
-      // Odraz od horní a dolní hrany viewportu
+      // Odraz od horní/dolní hrany (y = 0 až maxY)
       if (y <= 0) {
         y = 0;
         vy = Math.abs(vy);
@@ -591,23 +584,19 @@
         vy = -Math.abs(vy);
       }
 
-      // Aplikace transformace
       goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-
-      rafId = requestAnimationFrame(step);
+      requestAnimationFrame(step);
     }
 
     function start() {
       if (running) return;
       running = true;
       clampToViewport();
-      rafId = requestAnimationFrame(step);
+      requestAnimationFrame(step);
     }
 
-    // Spuštění animace po kliknutí
     goat.addEventListener('click', start);
 
-    // Při změně velikosti okna přepočítej pozici
     window.addEventListener('resize', () => {
       clampToViewport();
       goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
