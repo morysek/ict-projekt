@@ -11,16 +11,23 @@
   --card-w: 320px;
 }
 
-/* Pravý horní roh – kozej */
+/* Levý horní roh – koza */
 #goat-logo {
   position: fixed;
   top: 12px;
-  right: 12px;
+  left: 12px;
   width: 44px;
   height: 44px;
   z-index: 10000;
   opacity: 0.95;
-  pointer-events: none; /* neblokuje kliky na UI pod ikonou */
+  cursor: pointer;          /* je klikací */
+  pointer-events: auto;     /* povolí kliknutí */
+  will-change: transform;   /* plynulejší animace */
+}
+@media (max-width: 480px) {
+  #goat-logo { width: 32px; height: 32px; }
+}
+
 }
 @media (max-width: 480px) {
   #goat-logo { width: 32px; height: 32px; }
