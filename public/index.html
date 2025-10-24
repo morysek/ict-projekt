@@ -532,62 +532,66 @@
 
         filterSeminars('all');
     </script>
-    <script>
+   <script>
   (function () {
     const goat = document.getElementById('goat-logo');
     if (!goat) return;
 
-    // Počáteční pozice v levém horním rohu
-    let x = 12;
-    let y = 12;
+    // Start přesně v levém horním rohu viewportu
+    let x = 0;
+    let y = 0;
 
-    // Rychlosti v px/snímek (při ~60fps to je ~px/s)
-    let vx = 3.2;
-    let vy = 2.4;
+    // Rychlost v px/frame (cca 60 fps → ~px/s)
+    let vx = 3.0;
+    let vy = 2.2;
 
     let running = false;
     let rafId = null;
 
+    function bounds() {
+      // Přesné hranice viewportu
+      const maxX = window.innerWidth - goat.offsetWidth;
+      const maxY = window.innerHeight - goat.offsetHeight;
+      return { maxX, maxY };
+    }
+
     function clampToViewport() {
-      const maxX = window.innerWidth - goat.offsetWidth - 1;
-      const maxY = window.innerHeight - goat.offsetHeight - 1;
+      const { maxX, maxY } = bounds();
       x = Math.max(0, Math.min(x, maxX));
       y = Math.max(0, Math.min(y, maxY));
     }
 
     function step() {
-      const maxX = window.innerWidth - goat.offsetWidth;
-      const maxY = window.innerHeight - goat.offsetHeight;
+      const { maxX, maxY } = bounds();
 
       x += vx;
       y += vy;
 
-      // Odrážení od svislých stěn
+      // Odraz od svislých hran viewportu
       if (x <= 0) { x = 0; vx = Math.abs(vx); }
       else if (x >= maxX) { x = maxX; vx = -Math.abs(vx); }
 
-      // Odrážení od vodorovných stěn
+      // Odraz od vodorovných hran viewportu
       if (y <= 0) { y = 0; vy = Math.abs(vy); }
       else if (y >= maxY) { y = maxY; vy = -Math.abs(vy); }
 
-      // Přesun pomocí transform (plynulejší než top/left)
-      goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      // Volitelně zarovnej na celé pixely kvůli ostrosti:
+      // const tx = Math.round(x); const ty = Math.round(y);
+      // goat.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
 
+      goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       rafId = requestAnimationFrame(step);
     }
 
     function start() {
       if (running) return;
       running = true;
-      // Při startu zajisti, že je v rámci viewportu
       clampToViewport();
       rafId = requestAnimationFrame(step);
     }
 
-    // Spusť pohyb po kliknutí na obrázek
     goat.addEventListener('click', start);
 
-    // Při změně velikosti okna drž obrázek v rámci viditelné plochy
     window.addEventListener('resize', () => {
       clampToViewport();
       goat.style.transform = `translate3d(${x}px, ${y}px, 0)`;
