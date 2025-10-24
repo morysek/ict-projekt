@@ -11,27 +11,23 @@
   --card-w: 320px;
 }
 
-/* Levý horní roh – koza */
+/* Levý horní roh – přesné hranice viewportu */
 #goat-logo {
   position: fixed;
-  top: 12px;
-  left: 12px;
+  top: 0;
+  left: 0;
   width: 44px;
   height: 44px;
   z-index: 10000;
   opacity: 0.95;
-  cursor: pointer;          /* je klikací */
-  pointer-events: auto;     /* povolí kliknutí */
-  will-change: transform;   /* plynulejší animace */
+  cursor: pointer;
+  pointer-events: auto;
+  will-change: transform;
 }
 @media (max-width: 480px) {
   #goat-logo { width: 32px; height: 32px; }
 }
 
-}
-@media (max-width: 480px) {
-  #goat-logo { width: 32px; height: 32px; }
-}
 
 
 *{box-sizing:border-box}
