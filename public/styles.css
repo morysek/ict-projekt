@@ -11,7 +11,7 @@
   --card-w: 320px;
 }
 
-/* Levý horní roh – přesné hranice viewportu */
+/* Kozí hlava - základní styl */
 #goat-logo {
   position: fixed;
   top: 0;
@@ -22,7 +22,60 @@
   opacity: 0.95;
   cursor: pointer;
   pointer-events: auto;
-  will-change: transform;
+  transition: transform 0.1s ease;
+}
+
+#goat-logo:hover {
+  transform: scale(1.1);
+}
+
+/* Animace rotace */
+#goat-logo.spinning {
+  animation: spin 1s ease-in-out;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* Počítadlo kliknutí */
+#goat-counter {
+  position: fixed;
+  top: 50px;
+  left: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  z-index: 9999;
+  min-width: 30px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 480px) {
+  #goat-logo { 
+    width: 32px; 
+    height: 32px; 
+  }
+  
+  #goat-counter {
+    top: 36px;
+    font-size: 14px;
+    padding: 3px 8px;
+  }
+
 }
 @media (max-width: 480px) {
   #goat-logo { width: 32px; height: 32px; }
