@@ -532,5 +532,40 @@
 
         filterSeminars('all');
     </script>
+    <script>
+  (function () {
+    const goat = document.getElementById('goat-logo');
+    if (!goat) return;
+
+    let clickCount = 0;
+    let isSpinning = false;
+
+    // Vytvoř počítadlo
+    const counter = document.createElement('div');
+    counter.id = 'goat-counter';
+    counter.textContent = '0';
+    document.body.appendChild(counter);
+
+    goat.addEventListener('click', function() {
+      // Zvyš počítadlo
+      clickCount++;
+      counter.textContent = clickCount;
+
+      // Pokud už se točí, nepřidávej další animaci
+      if (isSpinning) return;
+
+      // Zahaj rotaci
+      isSpinning = true;
+      goat.classList.add('spinning');
+
+      // Po dokončení animace (1 sekunda) odstraň třídu
+      setTimeout(() => {
+        goat.classList.remove('spinning');
+        isSpinning = false;
+      }, 1000);
+    });
+  })();
+</script>
+
 </body>
 </html>
