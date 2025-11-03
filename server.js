@@ -10,7 +10,7 @@ app.use(express.json());
 // Priorita: 1) Environment variable DATABASE_URL (Render.com)
 //           2) Přímý connection string níže
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://studenti_seminare_user:TVOJE_HESLO@dpg-XXXXXXXXXXXX.frankfurt-postgres.render.com/studenti_seminare',
+  connectionString: process.env.DATABASE_URL || 'postgresql://studenti_seminare_user:N27DTU7WoZZZ3SpalH1BhSlNt30V9Mck@dpg-d447oc3ipnbc73cqh32g-a/studenti_seminare',
   ssl: {
     rejectUnauthorized: false
   }
