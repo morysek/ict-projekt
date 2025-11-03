@@ -7,8 +7,10 @@ const app = express();
 app.use(express.json());
 
 // Konfigurace PostgreSQL databáze
+// Priorita: 1) Environment variable DATABASE_URL (Render.com)
+//           2) Přímý connection string níže
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL || 'postgresql://studenti_seminare_user:TVOJE_HESLO@dpg-XXXXXXXXXXXX.frankfurt-postgres.render.com/studenti_seminare',
   ssl: {
     rejectUnauthorized: false
   }
@@ -58,9 +60,9 @@ async function initDatabase() {
       ON CONFLICT (key) DO NOTHING
     `);
     
-    console.log('Databáze inicializována');
+    console.log('✅ Databáze inicializována');
   } catch (err) {
-    console.error('Chyba při inicializaci databáze:', err);
+    console.error('❌ Chyba při inicializaci databáze:', err);
     process.exit(1);
   }
 }
@@ -384,5 +386,5 @@ app.get('*', (_req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
-  console.log(`Server běží na http://localhost:${PORT}`); 
+  console.log(`🚀 Server běží na http://localhost:${PORT}`); 
 });
