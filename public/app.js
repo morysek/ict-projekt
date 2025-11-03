@@ -137,6 +137,76 @@ function startSSE() {
     setTimeout(startSSE, 2000);
   };
 }
+async function uploadStudents() {
+  const fileInput = document.getElementById('studentsFile');
+  const statusDiv = document.getElementById('uploadStatus');
+  
+  if (!fileInput.files.length) {
+    statusDiv.textContent = 'Vyber soubor!';
+    statusDiv.style.color = 'red';
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  
+  try {
+    const res = await fetch(`/api/admin/upload-students?secret=${adminSecret}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await res.json();
+    
+    if (data.ok) {
+      statusDiv.textContent = data.message;
+      statusDiv.style.color = 'green';
+    } else {
+      statusDiv.textContent = data.error || 'Chyba při nahrávání';
+      statusDiv.style.color = 'red';
+    }
+  } catch (err) {
+    statusDiv.textContent = 'Chyba: ' + err.message;
+    statusDiv.style.color = 'red';
+  }
+}
+
+async function uploadSeminars() {
+  const fileInput = document.getElementById('seminarsFile');
+  const statusDiv = document.getElementById('uploadStatus');
+  
+  if (!fileInput.files.length) {
+    statusDiv.textContent = 'Vyber soubor!';
+    statusDiv.style.color = 'red';
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  
+  try {
+    const res = await fetch(`/api/admin/upload-seminars?secret=${adminSecret}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await res.json();
+    
+    if (data.ok) {
+      statusDiv.textContent = data.message;
+      statusDiv.style.color = 'green';
+      // Aktualizovat seznam seminářů
+      location.reload();
+    } else {
+      statusDiv.textContent = data.error || 'Chyba při nahrávání';
+      statusDiv.style.color = 'red';
+    }
+  } catch (err) {
+    statusDiv.textContent = 'Chyba: ' + err.message;
+    statusDiv.style.color = 'red';
+  }
+}
+
 
 // startup
 fetchOptions();
