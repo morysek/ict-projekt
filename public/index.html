@@ -255,6 +255,24 @@
         <div id="adminScreen" class="screen">
             <h1>👨‍💼 Admin: přihlášky a výsledky</h1>
             <button onclick="evaluateSelections()">Uzavřít a vyhodnotit</button>
+            <div style="margin-top: 20px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
+            <h3>📤 Nahrát CSV soubory</h3>
+  
+             <div style="margin: 10px 0;">
+         <label style="display: block; margin-bottom: 5px;"><strong>Soubor povolených studentů:</strong></label>
+    <input type="file" id="studentsFile" accept=".csv" />
+    <button onclick="uploadStudents()" style="margin-left: 10px;">Nahrát studenty</button>
+  </div>
+  
+  <div style="margin: 10px 0;">
+    <label style="display: block; margin-bottom: 5px;"><strong>Soubor seminářů:</strong></label>
+    <input type="file" id="seminarsFile" accept=".csv" />
+    <button onclick="uploadSeminars()" style="margin-left: 10px;">Nahrát semináře</button>
+  </div>
+  
+  <div id="uploadStatus" style="margin-top: 10px; color: green;"></div>
+</div>
+
             <button onclick="reopenRegistration()">Otevřít registraci znovu</button>
             <button class="button-secondary" onclick="logout()">Odhlásit a přihlásit jiného</button>
             <div id="adminResults"></div>
