@@ -228,6 +228,41 @@ function showUploadNotification(message, isSuccess) {
     statusDiv.style.display = 'none';
   }, 5000);
 }
+// ... předchozí funkce (logout, submitSelection, atd.)
+
+// Admin login
+async function loginAdmin() {
+  const pwd = prompt("Admin heslo:");
+  if (!pwd) return;
+  
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    
+    const data = await res.json();
+    
+    if (data.ok) {
+      adminSecret = data.secret; // ← DŮLEŽITÉ: uložit secret
+      currentUser = 'admin';
+      showView('adminView');
+      loadAdminData();
+      showToast('✅ Přihlášen jako admin');  // ← Přidal jsem toast
+    } else {
+      showToast('❌ ' + (data.error || 'Nesprávné heslo'));  // ← Změnil jsem na toast
+    }
+  } catch (err) {
+    showToast('❌ Chyba při přihlášení');  // ← Změnil jsem na toast
+  }
+}
+
+// Upload studentů
+async function uploadStudents() {
+  // ... další funkce
+}
+
 
 // Upload studentů
 async function uploadStudents() {
