@@ -254,6 +254,47 @@
         <!-- Admin Screen -->
         <div id="adminScreen" class="screen">
             <h1>👨‍💼 Admin: přihlášky a výsledky</h1>
+            <!-- Admin sekce - přidej toto pod nadpis "👨‍💼 Admin: přihlášky a výsledky" -->
+<div id="adminView" style="display: none;">
+  
+  <!-- Sekce pro nahrávání CSV souborů -->
+  <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <h3 style="color: white; margin-top: 0;">📤 Nahrát CSV soubory</h3>
+    
+    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+        👥 Soubor povolených studentů:
+      </label>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="file" id="studentsFile" accept=".csv" style="flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 6px;" />
+        <button onclick="uploadStudents()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+          ⬆️ Nahrát studenty
+        </button>
+      </div>
+    </div>
+    
+    <div style="background: white; padding: 15px; border-radius: 8px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+        📚 Soubor seminářů:
+      </label>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="file" id="seminarsFile" accept=".csv" style="flex: 1; padding: 8px; border: 2px solid #ddd; border-radius: 6px;" />
+        <button onclick="uploadSeminars()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+          ⬆️ Nahrát semináře
+        </button>
+      </div>
+    </div>
+    
+    <div id="uploadStatus" style="margin-top: 15px; padding: 12px; border-radius: 6px; font-weight: bold; text-align: center; display: none;"></div>
+  </div>
+
+  <!-- Zbytek admin sekce (tlačítka Uzavřít, Otevřít atd.) -->
+  <button onclick="closeAndEvaluate()">🔒 Uzavřít a vyhodnotit</button>
+  <button onclick="reopenRegistration()">🔓 Otevřít registraci znovu</button>
+  <button onclick="logoutAdmin()">Odhlásit a přihlásit jiného</button>
+  
+  <!-- ... zbytek admin kódu ... -->
+</div>
             <button onclick="evaluateSelections()">Uzavřít a vyhodnotit</button>
             <div style="margin-top: 20px; padding: 20px; background: #f0f0f0; border-radius: 8px;">
             <h3>📤 Nahrát CSV soubory</h3>
