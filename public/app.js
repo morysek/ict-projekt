@@ -206,7 +206,102 @@ async function uploadSeminars() {
     statusDiv.style.color = 'red';
   }
 }
+// Globální proměnná pro admin secret (už by měla existovat v kódu)
+let adminSecret = '';
 
+// Funkce pro zobrazení notifikace
+function showUploadNotification(message, isSuccess) {
+  const statusDiv = document.getElementById('uploadStatus');
+  statusDiv.textContent = message;
+  statusDiv.style.display = 'block';
+  
+  if (isSuccess) {
+    statusDiv.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    statusDiv.style.color = 'white';
+  } else {
+    statusDiv.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    statusDiv.style.color = 'white';
+  }
+  
+  // Automaticky skrýt po 5 sekundách
+  setTimeout(() => {
+    statusDiv.style.display = 'none';
+  }, 5000);
+}
+
+// Upload studentů
+async function uploadStudents() {
+  const fileInput = document.getElementById('studentsFile');
+  
+  if (!fileInput.files.length) {
+    showUploadNotification('❌ Vyber soubor se studenty!', false);
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  
+  try {
+    showUploadNotification('⏳ Nahrávám studenty...', true);
+    
+    const res = await fetch(`/api/admin/upload-students?secret=${adminSecret}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await res.json();
+    
+    if (data.ok) {
+      showUploadNotification(`✅ ${data.message}`, true);
+      // Vymazat pole s nahraným souborem
+      fileInput.value = '';
+    } else {
+      showUploadNotification(`❌ ${data.error || 'Chyba při nahrávání'}`, false);
+    }
+  } catch (err) {
+    showUploadNotification(`❌ Chyba: ${err.message}`, false);
+  }
+}
+
+// Upload seminářů
+async function uploadSeminars() {
+  const fileInput = document.getElementById('seminarsFile');
+  
+  if (!fileInput.files.length) {
+    showUploadNotification('❌ Vyber soubor se semináři!', false);
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  
+  try {
+    showUploadNotification('⏳ Nahrávám semináře...', true);
+    
+    const res = await fetch(`/api/admin/upload-seminars?secret=${adminSecret}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await res.json();
+    
+    if (data.ok) {
+      showUploadNotification(`✅ ${data.message}`, true);
+      // Vymazat pole s nahraným souborem
+      fileInput.value = '';
+      
+      // Aktualizovat seznam seminářů na stránce
+      setTimeout(() => {
+        showUploadNotification('🔄 Aktualizuji seznam seminářů...', true);
+        location.reload();
+      }, 2000);
+    } else {
+      showUploadNotification(`❌ ${data.error || 'Chyba při nahrávání'}`, false);
+    }
+  } catch (err) {
+    showUploadNotification(`❌ Chyba: ${err.message}`, false);
+  }
+}
 
 // startup
 fetchOptions();
