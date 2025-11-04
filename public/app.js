@@ -228,47 +228,31 @@ function showUploadNotification(message, isSuccess) {
     statusDiv.style.display = 'none';
   }, 5000);
 }
-// ... předchozí funkce (logout, submitSelection, atd.)
 
-// Admin login
-async function loginAdmin() {
-  const pwd = prompt("Admin heslo:");
-  if (!pwd) return;
+// ========== PŘIDEJ TYTO FUNKCE NA KONEC APP.JS ==========
+
+// Globální proměnná pro admin secret (přidej na začátek souboru, pokud tam není)
+let adminSecret = '';
+
+// Funkce pro zobrazení upload notifikace
+function showUploadNotification(message, isSuccess) {
+  const statusDiv = document.getElementById('uploadStatus');
+  if (!statusDiv) return;
   
-  try {
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pwd })
-    });
-    
-    const data = await res.json();
-    
-    if (data.ok) {
-      adminSecret = data.secret; // ← DŮLEŽITÉ: uložit secret
-      currentUser = 'admin';
-      showView('adminView');
-      loadAdminData();
-      showToast('✅ Přihlášen jako admin');  // ← Přidal jsem toast
-    } else {
-      showToast('❌ ' + (data.error || 'Nesprávné heslo'));  // ← Změnil jsem na toast
-    }
-  } catch (err) {
-    showToast('❌ Chyba při přihlášení');  // ← Změnil jsem na toast
-  }
+  statusDiv.textContent = message;
+  statusDiv.style.display = 'block';
+  statusDiv.className = isSuccess ? 'success' : 'error';
+  
+  setTimeout(() => {
+    statusDiv.style.display = 'none';
+  }, 5000);
 }
-
-// Upload studentů
-async function uploadStudents() {
-  // ... další funkce
-}
-
 
 // Upload studentů
 async function uploadStudents() {
   const fileInput = document.getElementById('studentsFile');
   
-  if (!fileInput.files.length) {
+  if (!fileInput || !fileInput.files.length) {
     showUploadNotification('❌ Vyber soubor se studenty!', false);
     return;
   }
@@ -288,7 +272,6 @@ async function uploadStudents() {
     
     if (data.ok) {
       showUploadNotification(`✅ ${data.message}`, true);
-      // Vymazat pole s nahraným souborem
       fileInput.value = '';
     } else {
       showUploadNotification(`❌ ${data.error || 'Chyba při nahrávání'}`, false);
@@ -302,7 +285,7 @@ async function uploadStudents() {
 async function uploadSeminars() {
   const fileInput = document.getElementById('seminarsFile');
   
-  if (!fileInput.files.length) {
+  if (!fileInput || !fileInput.files.length) {
     showUploadNotification('❌ Vyber soubor se semináři!', false);
     return;
   }
@@ -322,10 +305,8 @@ async function uploadSeminars() {
     
     if (data.ok) {
       showUploadNotification(`✅ ${data.message}`, true);
-      // Vymazat pole s nahraným souborem
       fileInput.value = '';
       
-      // Aktualizovat seznam seminářů na stránce
       setTimeout(() => {
         showUploadNotification('🔄 Aktualizuji seznam seminářů...', true);
         location.reload();
@@ -337,6 +318,9 @@ async function uploadSeminars() {
     showUploadNotification(`❌ Chyba: ${err.message}`, false);
   }
 }
+
+// ========== KONEC NOVÝCH FUNKCÍ ==========
+
 
 // startup
 fetchOptions();
