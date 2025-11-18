@@ -545,6 +545,98 @@
                 alert('Chyba při mazání!');
             }
         }
+        async function uploadStudents() {
+    const fileInput = document.getElementById('studentsFile');
+    const file = fileInput.files[0];
+    const uploadStatus = document.getElementById('uploadStatus');
+    
+    if (!file) {
+        uploadStatus.style.display = 'block';
+        uploadStatus.style.background = '#fee';
+        uploadStatus.style.color = '#c33';
+        uploadStatus.textContent = 'Prosím vyberte CSV soubor!';
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('secret', adminSecret);
+    
+    try {
+        const res = await fetch('/api/admin/upload-students', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (data.ok) {
+            uploadStatus.style.display = 'block';
+            uploadStatus.style.background = '#efe';
+            uploadStatus.style.color = '#3c3';
+            uploadStatus.textContent = `✅ Studenti úspěšně nahráni! (${data.count || 0} studentů)`;
+            fileInput.value = ''; // Vyčistit input
+        } else {
+            uploadStatus.style.display = 'block';
+            uploadStatus.style.background = '#fee';
+            uploadStatus.style.color = '#c33';
+            uploadStatus.textContent = `❌ Chyba: ${data.error}`;
+        }
+    } catch (err) {
+        uploadStatus.style.display = 'block';
+        uploadStatus.style.background = '#fee';
+        uploadStatus.style.color = '#c33';
+        uploadStatus.textContent = '❌ Chyba při nahrávání!';
+        console.error('Chyba při nahrávání studentů:', err);
+    }
+}
+
+async function uploadSeminars() {
+    const fileInput = document.getElementById('seminarsFile');
+    const file = fileInput.files[0];
+    const uploadStatus = document.getElementById('uploadStatus');
+    
+    if (!file) {
+        uploadStatus.style.display = 'block';
+        uploadStatus.style.background = '#fee';
+        uploadStatus.style.color = '#c33';
+        uploadStatus.textContent = 'Prosím vyberte CSV soubor!';
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('secret', adminSecret);
+    
+    try {
+        const res = await fetch('/api/admin/upload-seminars', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await res.json();
+        
+        if (data.ok) {
+            uploadStatus.style.display = 'block';
+            uploadStatus.style.background = '#efe';
+            uploadStatus.style.color = '#3c3';
+            uploadStatus.textContent = `✅ Semináře úspěšně nahrány! (${data.count || 0} seminářů)`;
+            fileInput.value = ''; // Vyčistit input
+            await loadSeminars(); // Obnovit seznam seminářů
+        } else {
+            uploadStatus.style.display = 'block';
+            uploadStatus.style.background = '#fee';
+            uploadStatus.style.color = '#c33';
+            uploadStatus.textContent = `❌ Chyba: ${data.error}`;
+        }
+    } catch (err) {
+        uploadStatus.style.display = 'block';
+        uploadStatus.style.background = '#fee';
+        uploadStatus.style.color = '#c33';
+        uploadStatus.textContent = '❌ Chyba při nahrávání!';
+        console.error('Chyba při nahrávání seminářů:', err);
+    }
+}
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
