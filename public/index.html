@@ -221,7 +221,7 @@
         <div id="browseScreen" class="screen">
             <h1>📚 Přehled všech seminářů</h1>
             <div class="filters">
-                <button class="filter-btn active" onclick="filterSeminars('all')">Všechny</button>
+                <button class="filter-btn active" onclick="filterSeminars('all', event)">Všechny</button>
             </div>
             <div id="seminarsList"></div>
             <button class="button-secondary" onclick="showScreen('loginScreen')">Zpět na přihlášení</button>
@@ -654,7 +654,7 @@ async function uploadSeminars() {
             showScreen('loginScreen');
         }
 
-        async function filterSeminars(category) {
+        async function filterSeminars(category, event) {
             if (!allSeminars.length) {
                 const res = await fetch('/api/seminars');
                 const data = await res.json();
@@ -662,7 +662,7 @@ async function uploadSeminars() {
             }
 
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event) event.target.classList.add('active');
 
             let filtered = allSeminars;
             if (category !== 'all') {
