@@ -113,7 +113,7 @@ app.post('/api/admin/upload-students', upload.single('file'), async (req, res) =
   
   try {
     const csvContent = req.file.buffer.toString('utf8');
-const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
+    const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
     
     // Smazat staré záznamy
     await pool.query('DELETE FROM allowed_students');
@@ -121,8 +121,8 @@ const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
     // Přeskočit hlavičku a přidat studenty
     let count = 0;
     for (let i = 1; i < lines.length; i++) {
-const parts = lines[i].split(',');
-const username = parts[0].trim().toLowerCase();
+      const parts = lines[i].split(',');
+      const username = parts[0].trim().toLowerCase();
       if (username) {
         await pool.query(
           'INSERT INTO allowed_students (username) VALUES ($1) ON CONFLICT DO NOTHING',
