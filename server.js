@@ -26,14 +26,14 @@ async function initDatabase() {
         name TEXT NOT NULL,
         lecturers TEXT[],
         capacity INTEGER NOT NULL
-      )
+      );
     `);
     
     // Tabulka pro povolené studenty
     await pool.query(`
       CREATE TABLE IF NOT EXISTS allowed_students (
         username TEXT PRIMARY KEY
-      )
+      );
     `);
     
     // Tabulka pro výběry studentů
@@ -42,7 +42,7 @@ async function initDatabase() {
         username TEXT PRIMARY KEY,
         priorities INTEGER[],
         timestamp BIGINT NOT NULL
-      )
+      );
     `);
     
     // Tabulka pro nastavení
@@ -50,14 +50,14 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS settings (
         key TEXT PRIMARY KEY,
         value TEXT
-      )
+      );
     `);
     
     // Inicializovat registrationOpen pokud neexistuje
     await pool.query(`
       INSERT INTO settings (key, value) 
       VALUES ('registrationOpen', 'true')
-      ON CONFLICT (key) DO NOTHING
+      ON CONFLICT (key) DO NOTHING;
     `);
     
     console.log('✅ Databáze inicializována');
